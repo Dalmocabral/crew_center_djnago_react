@@ -1,107 +1,199 @@
 import React, { useState } from "react";
-import { TextField, Button, Container, Typography, Box, IconButton, InputAdornment } from "@mui/material";
+import { useForm, Controller } from "react-hook-form";
+import { useNavigate } from "react-router-dom"; // Importe useNavigate
+import { TextField, Button, Container, Typography, Box, IconButton, InputAdornment, Snackbar, Alert } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import AxiosInstance from "../components/AxiosInstance";
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    password1: "",
-    password2: "",
-  });
-  const [error, setError] = useState("");
   const [showPassword1, setShowPassword1] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const {
+    control,
+    handleSubmit,
+    watch,
+    reset, // Adicione o método reset do react-hook-form
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+      email: "",
+      password1: "",
+      password2: "",
+    },
+  });
+
+  const navigate = useNavigate(); // Hook para redirecionar o usuário
+
+  const submission = async (data) => {
+    try {
+      const response = await AxiosInstance.post(`register/`, {
+        email: data.email,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        password: data.password1,
+        confirm_password: data.password2,
+      });
+
+      // Exibe mensagem de sucesso
+      setSnackbarMessage("Registration successful! Redirecting to login...");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+
+      console.log("Registration successful:", response.data);
+
+      // Limpa os campos do formulário
+      reset();
+
+      // Redireciona para a página de login após 3 segundos
+      setTimeout(() => {
+        navigate("/login"); // Redireciona para a página de login
+      }, 3000);
+    } catch (error) {
+      // Exibe mensagem de erro
+      setSnackbarMessage("Registration failed. Please try again.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+
+      console.error("Registration failed:", error.response ? error.response.data : error.message);
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (formData.password1 !== formData.password2) {
-      setError("Passwords do not match");
-      return;
-    }
-    setError("");
-    console.log("Form submitted", formData);
-    // Here you can call your API to register the user
+  const onSubmit = (data) => {
+    console.log("Form submitted", data);
+    submission(data); // Chama a função de submissão
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   return (
     <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
       <Box sx={{ p: 3, boxShadow: 3, borderRadius: 2, textAlign: 'center' }}>
         <Typography variant="h5" gutterBottom>Register</Typography>
-        <form onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            label="First Name"
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {/* Campo First Name */}
+          <Controller
             name="first_name"
-            value={formData.first_name}
-            onChange={handleChange}
-            margin="normal"
-            required
+            control={control}
+            rules={{ required: "First name is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="First Name"
+                margin="normal"
+                error={!!errors.first_name}
+                helperText={errors.first_name?.message}
+              />
+            )}
           />
-          <TextField
-            fullWidth
-            label="Last Name"
+
+          {/* Campo Last Name */}
+          <Controller
             name="last_name"
-            value={formData.last_name}
-            onChange={handleChange}
-            margin="normal"
-            required
+            control={control}
+            rules={{ required: "Last name is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Last Name"
+                margin="normal"
+                error={!!errors.last_name}
+                helperText={errors.last_name?.message}
+              />
+            )}
           />
-          <TextField
-            fullWidth
-            label="Email"
-            type="email"
+
+          {/* Campo Email */}
+          <Controller
             name="email"
-            value={formData.email}
-            onChange={handleChange}
-            margin="normal"
-            required
+            control={control}
+            rules={{
+              required: "Email is required",
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: "Invalid email address",
+              },
+            }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Email"
+                type="email"
+                margin="normal"
+                error={!!errors.email}
+                helperText={errors.email?.message}
+              />
+            )}
           />
-          <TextField
-            fullWidth
-            label="Password"
-            type={showPassword1 ? "text" : "password"}
+
+          {/* Campo Password */}
+          <Controller
             name="password1"
-            value={formData.password1}
-            onChange={handleChange}
-            margin="normal"
-            required
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword1(!showPassword1)}>
-                    {showPassword1 ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
+            control={control}
+            rules={{ required: "Password is required", minLength: { value: 6, message: "Password must be at least 6 characters" } }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Password"
+                type={showPassword1 ? "text" : "password"}
+                margin="normal"
+                error={!!errors.password1}
+                helperText={errors.password1?.message}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword1(!showPassword1)}>
+                        {showPassword1 ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
           />
-          <TextField
-            fullWidth
-            label="Confirm Password"
-            type={showPassword2 ? "text" : "password"}
+
+          {/* Campo Confirm Password */}
+          <Controller
             name="password2"
-            value={formData.password2}
-            onChange={handleChange}
-            margin="normal"
-            required
-            error={!!error}
-            helperText={error}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword2(!showPassword2)}>
-                    {showPassword2 ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              )
+            control={control}
+            rules={{
+              required: "Confirm password is required",
+              validate: (value) => value === watch("password1") || "Passwords do not match",
             }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Confirm Password"
+                type={showPassword2 ? "text" : "password"}
+                margin="normal"
+                error={!!errors.password2}
+                helperText={errors.password2?.message}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword2(!showPassword2)}>
+                        {showPassword2 ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
           />
+
+          {/* Botão de Submit */}
           <Button
             type="submit"
             variant="contained"
@@ -113,6 +205,18 @@ const Register = () => {
           </Button>
         </form>
       </Box>
+
+      {/* Snackbar para feedback */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

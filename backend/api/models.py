@@ -33,10 +33,16 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractUser):
     email = models.EmailField(max_length=200, unique=True)
-    first_name = models.CharField(max_length=200, null=True)
-    last_name = models.CharField(max_length=240, null=True)
+    first_name = models.CharField(max_length=200, null=True, blank=True)
+    last_name = models.CharField(max_length=240, null=True, blank=True)
 
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = []  # Remova 'username' dos campos obrigatórios
+
+    def save(self, *args, **kwargs):
+        # Gera um username automaticamente se não for fornecido
+        if not self.username:
+            self.username = self.email  # Usa o email como username
+        super().save(*args, **kwargs)
