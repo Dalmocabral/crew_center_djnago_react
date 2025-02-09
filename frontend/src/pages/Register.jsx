@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useNavigate } from "react-router-dom"; // Importe useNavigate
+import { useNavigate } from "react-router-dom";
 import { TextField, Button, Container, Typography, Box, IconButton, InputAdornment, Snackbar, Alert } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import AxiosInstance from "../components/AxiosInstance";
+import ReactFlagsSelect from "react-flags-select"; // Importa o componente de seleção de bandeiras
 
 const Register = () => {
   const [showPassword1, setShowPassword1] = useState(false);
@@ -11,24 +12,45 @@ const Register = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [selectedCountry, setSelectedCountry] = useState(""); // Estado para o país selecionado
 
   const {
     control,
     handleSubmit,
     watch,
-    reset, // Adicione o método reset do react-hook-form
+    reset,
+    setValue, // Adicionado para atualizar os campos
     formState: { errors },
   } = useForm({
     defaultValues: {
       first_name: "",
       last_name: "",
+      usernameIFC: "",
       email: "",
+      country: "", // Adiciona o campo country
       password1: "",
       password2: "",
     },
   });
 
-  const navigate = useNavigate(); // Hook para redirecionar o usuário
+  const navigate = useNavigate();
+
+  // Função para capitalizar a primeira letra de uma string
+  const capitalizeFirstLetter = (str) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
+  // Função para formatar o First Name e Last Name enquanto o usuário digita
+  const handleNameChange = (fieldName, value) => {
+    const capitalizedValue = capitalizeFirstLetter(value);
+    setValue(fieldName, capitalizedValue); // Atualiza o valor do campo
+  };
+
+  // Função para atualizar o país selecionado
+  const handleCountryChange = (countryCode) => {
+    setSelectedCountry(countryCode); // Atualiza o estado local
+    setValue("country", countryCode); // Atualiza o valor do campo no formulário
+  };
 
   const submission = async (data) => {
     try {
@@ -36,6 +58,8 @@ const Register = () => {
         email: data.email,
         first_name: data.first_name,
         last_name: data.last_name,
+        usernameIFC: data.usernameIFC,
+        country: data.country, // Inclui o país no envio dos dados
         password: data.password1,
         confirm_password: data.password2,
       });
@@ -52,7 +76,7 @@ const Register = () => {
 
       // Redireciona para a página de login após 3 segundos
       setTimeout(() => {
-        navigate("/login"); // Redireciona para a página de login
+        navigate("/login");
       }, 3000);
     } catch (error) {
       // Exibe mensagem de erro
@@ -66,7 +90,7 @@ const Register = () => {
 
   const onSubmit = (data) => {
     console.log("Form submitted", data);
-    submission(data); // Chama a função de submissão
+    submission(data);
   };
 
   const handleCloseSnackbar = () => {
@@ -91,11 +115,14 @@ const Register = () => {
                 margin="normal"
                 error={!!errors.first_name}
                 helperText={errors.first_name?.message}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  field.onChange(value.charAt(0).toUpperCase() + value.slice(1));
+                }}
               />
             )}
           />
 
-          {/* Campo Last Name */}
           <Controller
             name="last_name"
             control={control}
@@ -108,9 +135,14 @@ const Register = () => {
                 margin="normal"
                 error={!!errors.last_name}
                 helperText={errors.last_name?.message}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  field.onChange(value.charAt(0).toUpperCase() + value.slice(1));
+                }}
               />
             )}
           />
+
 
           {/* Campo Email */}
           <Controller
@@ -132,6 +164,44 @@ const Register = () => {
                 margin="normal"
                 error={!!errors.email}
                 helperText={errors.email?.message}
+              />
+            )}
+          />
+
+          {/* Campo usernameIFC */}
+          <Controller
+            name="usernameIFC"
+            control={control}
+            rules={{ required: "Username IFC is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Username IFC"
+                margin="normal"
+                error={!!errors.usernameIFC}
+                helperText={errors.usernameIFC?.message}
+                onChange={(e) => {
+                  handleNameChange("last_name", e.target.value); // Formata o valor
+                  field.onChange(e); // Mantém a atualização do react-hook-form
+                }}
+              />
+            )}
+          />
+
+          {/* Campo Country */}
+          <Controller
+            name="country"
+            control={control}
+            rules={{ required: "Country is required" }}
+            render={({ field }) => (
+              <ReactFlagsSelect
+                selected={selectedCountry}
+                onSelect={handleCountryChange} // Atualiza o país selecionado
+                searchable // Permite pesquisar países
+                placeholder="Select Country"
+                fullWidth
+                className="country-select"
               />
             )}
           />

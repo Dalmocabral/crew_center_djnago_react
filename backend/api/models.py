@@ -35,6 +35,8 @@ class CustomUser(AbstractUser):
     email = models.EmailField(max_length=200, unique=True)
     first_name = models.CharField(max_length=200, null=True, blank=True)
     last_name = models.CharField(max_length=240, null=True, blank=True)
+    usernameIFC = models.CharField(max_length=240, null=True, blank=True)
+    country = models.CharField(max_length=240, null=True, blank=True)
 
     objects = CustomUserManager()
 
