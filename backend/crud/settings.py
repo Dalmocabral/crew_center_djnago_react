@@ -31,7 +31,8 @@ INSTALLED_APPS = [
 
     # App de terceiros
     'rest_framework', 
-    'corsheaders',  
+    'corsheaders', 
+    'knox', 
 
     # App local
     'api',
@@ -71,6 +72,11 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'crud.wsgi.application'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+    
+}
 
 
 # Database
@@ -126,3 +132,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'api.CustomUser'
+
+AUTHENTICATION_BACKENDS = [
+    'api.auth_backend.EmailAuthBackend'
+]
