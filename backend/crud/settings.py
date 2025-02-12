@@ -1,7 +1,6 @@
 
 
 from pathlib import Path
-import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -11,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-g+oavf8mwn!3fly8uu7zz29gr&uu(y&_bdaytmn41fwew9b=oz'
+SECRET_KEY = 'django-insecure-#r4@of(m-&6hj-m4k2*3_tke@he=02gsk(nbra0oglmrfw-_$0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -28,11 +27,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # App de terceiros
-    'rest_framework', 
-    'corsheaders', 
-    'knox', 
+    
+    # App Terceiros
+    'rest_framework',
+    'corsheaders',
 
     # App local
     'api',
@@ -50,10 +48,14 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
+    'http://localhost:5173'
 ]
 
+AUTH_USER_MODEL = 'api.CustomUser'
+
 ROOT_URLCONF = 'crud.urls'
+
+
 
 TEMPLATES = [
     {
@@ -72,11 +74,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'crud.wsgi.application'
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
-    
-}
 
 
 # Database
@@ -130,9 +127,3 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-AUTH_USER_MODEL = 'api.CustomUser'
-
-AUTHENTICATION_BACKENDS = [
-    'api.auth_backend.EmailAuthBackend'
-]
