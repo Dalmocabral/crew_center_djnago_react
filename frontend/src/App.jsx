@@ -9,7 +9,7 @@ import MyFlights from './pages/MyFlights';
 import Awards from './pages/Awards';
 import Map from './pages/Map';
 import Navbar from './components/Navbar';
-
+import ProtectedRoutes from './components/ProtectedRoutes';
 
 function App() {
   return (
@@ -18,11 +18,14 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/app" element={<Navbar />}>
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="awards" element={<Awards />} />
-        <Route path="my-flights" element={<MyFlights />} />
-        <Route path="my-awards" element={<MyAwards />} />
-        <Route path="map" element={<Map />} />
+        <Route element={<ProtectedRoutes />}>
+          {/* Rotas protegidas (relativas a /app) */}
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="awards" element={<Awards />} />
+          <Route path="my-flights" element={<MyFlights />} />
+          <Route path="my-awards" element={<MyAwards />} />
+          <Route path="map" element={<Map />} />
+        </Route>
       </Route>
     </Routes>
   );

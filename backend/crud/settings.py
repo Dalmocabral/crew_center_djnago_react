@@ -55,7 +55,8 @@ CORS_ALLOWED_ORIGINS = [
 AUTH_USER_MODEL = 'api.CustomUser'
 
 AUTHENTICATION_BACKENDS = [
-    'api.auth_backend.EmailAuthBackend'
+    'api.auth_backend.EmailAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',  # esta linha resolveu meu problema de nao conseguir logar no panel administrativo
 ]
 
 ROOT_URLCONF = 'crud.urls'
