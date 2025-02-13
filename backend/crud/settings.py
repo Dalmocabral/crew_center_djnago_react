@@ -54,6 +54,10 @@ CORS_ALLOWED_ORIGINS = [
 
 AUTH_USER_MODEL = 'api.CustomUser'
 
+AUTHENTICATION_BACKENDS = [
+    'api.auth_backend.EmailAuthBackend'
+]
+
 ROOT_URLCONF = 'crud.urls'
 
 

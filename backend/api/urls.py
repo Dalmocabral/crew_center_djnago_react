@@ -4,5 +4,7 @@ from .views import *  # Importe a viewset correta
 
 router = DefaultRouter()
 router.register('register', RegisterViewSet, basename='register')  # Registre a viewset
+router.register('login', LoginViewset, basename='login')  # Login a viewset
+
 
 urlpatterns = router.urls
