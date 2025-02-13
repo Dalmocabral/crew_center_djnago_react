@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     # App Terceiros
     'rest_framework',
     'corsheaders',
+    'knox',
 
     # App local
     'api',
@@ -74,6 +75,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'crud.wsgi.application'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+    
+}
+
 
 
 # Database
