@@ -9,6 +9,7 @@ import MyFlights from './pages/MyFlights';
 import Awards from './pages/Awards';
 import Map from './pages/Map';
 import Members from './pages/Members';
+import PirepsFlights from './pages/PirepsFlights';
 import Navbar from './components/Navbar';
 import ProtectedRoutes from './components/ProtectedRoutes';
 function App() {
@@ -26,6 +27,7 @@ function App() {
           <Route path="my-awards" element={<MyAwards />} />
           <Route path="map" element={<Map />} />
           <Route path="members" element={<Members />} /> {/* <-- Nova rota */}
+          <Route path="pirepsflights" element={<PirepsFlights />} /> {/* <-- Nova rota */}
         </Route>
       </Route>
     </Routes>

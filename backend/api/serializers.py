@@ -45,3 +45,11 @@ class LoginSerializer(serializers.Serializer):
 
         # Retorne os dados validados
         return data
+    
+
+
+class PirepsFlightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PirepsFlight
+        fields = ('id', 'aircraft_choices', 'flight_icao', 'flight_number', 'departure_airport', 'arrival_airport', 'aircraft',
+                  'pilot', 'flight_duration', 'registration_date', 'status' )

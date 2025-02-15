@@ -58,5 +58,18 @@ class UserViewset(viewsets.ViewSet):
         serializer = self.serializer_class(queryset, many=True) 
 
         return Response(serializer.data)
+    
+
+
+class PirepsFlightViewset(viewsets.ModelViewSet):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = PirepsFlightSerializer
+    queryset = PirepsFlight.objects.all()
+
+    def list(self, request):
+
+        queryset = PirepsFlight.objects.all()
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data)
 
         
