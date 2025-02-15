@@ -25,6 +25,7 @@ import {
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
   Logout as LogoutIcon,
+  Group as GroupIcon,
 } from '@mui/icons-material';
 import { useNavigate, Outlet } from 'react-router-dom';
 import { lightTheme, darkTheme } from '../theme'; // Importe os temas
@@ -59,10 +60,12 @@ const Navbar = () => {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/app/dashboard' },
+    { text: 'Members', icon: <GroupIcon />, path: '/app/members' }, // <-- Novo menu
     { text: 'Awards', icon: <AwardsIcon />, path: '/app/awards' },
     { text: 'My Flights', icon: <FlightsIcon />, path: '/app/my-flights' },
     { text: 'My Awards', icon: <MyAwardsIcon />, path: '/app/my-awards' },
     { text: 'MAP', icon: <MapIcon />, path: '/app/map' },
+    
   ];
 
   const drawer = (

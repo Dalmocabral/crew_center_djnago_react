@@ -181,14 +181,9 @@ const Register = () => {
                 margin="normal"
                 error={!!errors.usernameIFC}
                 helperText={errors.usernameIFC?.message}
-                onChange={(e) => {
-                  handleNameChange("last_name", e.target.value); // Formata o valor
-                  field.onChange(e); // Mantém a atualização do react-hook-form
-                }}
               />
             )}
           />
-
           {/* Campo Country */}
           <Controller
             name="country"

@@ -45,3 +45,18 @@ class LoginViewset(viewsets.ViewSet):
         
         else:
             return Response(serializer.errors, status=400)
+        
+
+class UserViewset(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]  # Permite acesso sem autenticação
+    serializer_class = RegisterSerializer
+    queryset = User.objects.all()
+
+    def list(self, request):
+
+        queryset = User.objects.all()
+        serializer = self.serializer_class(queryset, many=True) 
+
+        return Response(serializer.data)
+
+        

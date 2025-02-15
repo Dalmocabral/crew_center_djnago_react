@@ -8,9 +8,9 @@ import MyAwards from './pages/MyAwards';
 import MyFlights from './pages/MyFlights';
 import Awards from './pages/Awards';
 import Map from './pages/Map';
+import Members from './pages/Members';
 import Navbar from './components/Navbar';
 import ProtectedRoutes from './components/ProtectedRoutes';
-
 function App() {
   return (
     <Routes>
@@ -19,16 +19,16 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/app" element={<Navbar />}>
         <Route element={<ProtectedRoutes />}>
-          {/* Rotas protegidas (relativas a /app) */}
+          {/* Rotas protegidas */}
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="awards" element={<Awards />} />
           <Route path="my-flights" element={<MyFlights />} />
           <Route path="my-awards" element={<MyAwards />} />
           <Route path="map" element={<Map />} />
+          <Route path="members" element={<Members />} /> {/* <-- Nova rota */}
         </Route>
       </Route>
     </Routes>
   );
 }
-
 export default App;
