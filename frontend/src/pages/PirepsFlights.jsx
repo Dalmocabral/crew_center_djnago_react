@@ -10,6 +10,11 @@ import {
   Button,
   Grid,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -26,6 +31,11 @@ const PirepsFlights = () => {
   const [aircraft, setAircraft] = useState('');
   const [flightDuration, setFlightDuration] = useState(dayjs('2022-04-17T00:00')); // Valor inicial
 
+  // Estado do Dialog
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
+  const [dialogType, setDialogType] = useState('success'); // 'success' ou 'error'
+
   // Opções para o campo de seleção "Aircraft"
   const aircraftChoices = [
     { value: 'B737', label: 'Boeing 737' },
@@ -33,13 +43,17 @@ const PirepsFlights = () => {
     { value: 'B777', label: 'Boeing 777' },
   ];
 
-  // Função para enviar o formulário
+  // Função para fechar o Dialog
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     // Formata a duração do voo como "HH:mm:ss"
     const formattedDuration = flightDuration.format('HH:mm:ss');
-
+  
     // Dados a serem enviados
     const formData = {
       flight_icao: flightIcao,
@@ -49,17 +63,33 @@ const PirepsFlights = () => {
       aircraft: aircraft,
       flight_duration: formattedDuration,
     };
-
+  
     try {
       // Envia os dados para o backend
-      const response = await AxiosInstance.post('pirepsflight/', formData);
-      console.log('Resposta do servidor:', response.data);
-      alert('Pireps salvo com sucesso!');
+      await AxiosInstance.post('pirepsflight/', formData);
+
+      // Exibe mensagem de sucesso
+      setDialogMessage('Pireps salvo com sucesso!');
+      setDialogType('success');
+      setOpenDialog(true);
+  
+      // Limpa os campos do formulário após o envio bem-sucedido
+      setFlightIcao('');
+      setFlightNumber('');
+      setDepartureAirport('');
+      setArrivalAirport('');
+      setAircraft('');
+      setFlightDuration(dayjs('2022-04-17T00:00')); // Reset para a duração inicial
     } catch (error) {
       console.error('Erro ao salvar Pireps:', error.response ? error.response.data : error.message);
-      alert('Erro ao salvar Pireps. Verifique os dados e tente novamente.');
+      
+      // Exibe mensagem de erro
+      setDialogMessage('Erro ao salvar Pireps. Verifique os dados e tente novamente.');
+      setDialogType('error');
+      setOpenDialog(true);
     }
   };
+  
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -79,7 +109,7 @@ const PirepsFlights = () => {
                 <TextField
                   label="Flight ICAO"
                   value={flightIcao}
-                  onChange={(e) => setFlightIcao(e.target.value)}
+                  onChange={(e) => setFlightIcao(e.target.value ? e.target.value.toUpperCase() : '')}
                   fullWidth
                   required
                 />
@@ -101,7 +131,7 @@ const PirepsFlights = () => {
                 <TextField
                   label="Departure Airport"
                   value={departureAirport}
-                  onChange={(e) => setDepartureAirport(e.target.value)}
+                  onChange={(e) => setDepartureAirport(e.target.value ? e.target.value.toUpperCase() : '')}
                   fullWidth
                   required
                 />
@@ -112,7 +142,7 @@ const PirepsFlights = () => {
                 <TextField
                   label="Arrival Airport"
                   value={arrivalAirport}
-                  onChange={(e) => setArrivalAirport(e.target.value)}
+                  onChange={(e) => setArrivalAirport(e.target.value ? e.target.value.toUpperCase() : '')}
                   fullWidth
                   required
                 />
@@ -157,8 +187,20 @@ const PirepsFlights = () => {
           </form>
         </Box>
       </Container>
+
+      {/* Dialog de Sucesso ou Erro */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>{dialogType === 'success' ? 'Sucesso' : 'Erro'}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{dialogMessage}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">OK</Button>
+        </DialogActions>
+      </Dialog>
+
     </LocalizationProvider>
   );
 };
 
-export default PirepsFlights; 
+export default PirepsFlights;
