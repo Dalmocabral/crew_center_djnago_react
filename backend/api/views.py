@@ -60,16 +60,10 @@ class UserViewset(viewsets.ViewSet):
         return Response(serializer.data)
     
 
-
 class PirepsFlightViewset(viewsets.ModelViewSet):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]  # Apenas usuários autenticados podem criar PIREPs
     serializer_class = PirepsFlightSerializer
     queryset = PirepsFlight.objects.all()
 
-    def list(self, request):
-
-        queryset = PirepsFlight.objects.all()
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data)
-
-        
+    def perform_create(self, serializer):
+        serializer.save(pilot=self.request.user, status='Em análise')  # Define o piloto e o status fixamente

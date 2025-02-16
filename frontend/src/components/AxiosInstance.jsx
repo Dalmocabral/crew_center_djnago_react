@@ -1,14 +1,16 @@
 import axios from 'axios';
 
-const baseURL = 'http://127.0.0.1:8000/'; // Certifique-se de que esta URL está correta
-
 const AxiosInstance = axios.create({
-  baseURL: baseURL, // Corrigido para baseURL
-  timeout: 5000,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
+  baseURL: 'http://localhost:8000', // URL do seu backend Django
+});
+
+// Adiciona o token ao cabeçalho de todas as requisições
+AxiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Token ${token}`;
+  }
+  return config;
 });
 
 export default AxiosInstance;

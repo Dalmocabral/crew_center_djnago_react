@@ -47,9 +47,8 @@ class LoginSerializer(serializers.Serializer):
         return data
     
 
-
 class PirepsFlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = PirepsFlight
-        fields = ('id', 'aircraft_choices', 'flight_icao', 'flight_number', 'departure_airport', 'arrival_airport', 'aircraft',
-                  'pilot', 'flight_duration', 'registration_date', 'status' )
+        fields = ('id', 'flight_icao', 'flight_number', 'departure_airport', 'arrival_airport', 
+                  'aircraft', 'flight_duration', 'registration_date')  # Removemos 'pilot' e 'status'

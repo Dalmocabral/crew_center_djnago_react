@@ -192,7 +192,7 @@ class PirepsFlight (models.Model):
     pilot = models.ForeignKey(User, on_delete=models.CASCADE)
     flight_duration = models.DurationField(null=True, blank=True)     
     registration_date = models.DateTimeField(default=timezone.now)
-    status = models.CharField(max_length=20,  default='Em análise')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Em análise')
     # Outros campos relevantes sobre o voo
 
     def __str__(self):
