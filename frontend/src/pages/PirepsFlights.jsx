@@ -21,6 +21,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { TimeField } from '@mui/x-date-pickers/TimeField';
 import dayjs from 'dayjs';
 import AxiosInstance from '../components/AxiosInstance'; // Importe o AxiosInstance
+import aircraftChoices from '../data/aircraftChoices';
 
 const PirepsFlights = () => {
   // Estados para os campos do formulário
@@ -29,6 +30,7 @@ const PirepsFlights = () => {
   const [departureAirport, setDepartureAirport] = useState('');
   const [arrivalAirport, setArrivalAirport] = useState('');
   const [aircraft, setAircraft] = useState('');
+  const [network, setNetwork] = useState('')
   const [flightDuration, setFlightDuration] = useState(dayjs('2022-04-17T00:00')); // Valor inicial
 
   // Estado do Dialog
@@ -36,12 +38,6 @@ const PirepsFlights = () => {
   const [dialogMessage, setDialogMessage] = useState('');
   const [dialogType, setDialogType] = useState('success'); // 'success' ou 'error'
 
-  // Opções para o campo de seleção "Aircraft"
-  const aircraftChoices = [
-    { value: 'B737', label: 'Boeing 737' },
-    { value: 'A320', label: 'Airbus A320' },
-    { value: 'B777', label: 'Boeing 777' },
-  ];
 
   // Função para fechar o Dialog
   const handleCloseDialog = () => {
@@ -50,10 +46,10 @@ const PirepsFlights = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     // Formata a duração do voo como "HH:mm:ss"
     const formattedDuration = flightDuration.format('HH:mm:ss');
-  
+
     // Dados a serem enviados
     const formData = {
       flight_icao: flightIcao,
@@ -62,8 +58,9 @@ const PirepsFlights = () => {
       arrival_airport: arrivalAirport,
       aircraft: aircraft,
       flight_duration: formattedDuration,
+      network: network,
     };
-  
+
     try {
       // Envia os dados para o backend
       await AxiosInstance.post('pirepsflight/', formData);
@@ -72,7 +69,7 @@ const PirepsFlights = () => {
       setDialogMessage('Pireps salvo com sucesso!');
       setDialogType('success');
       setOpenDialog(true);
-  
+
       // Limpa os campos do formulário após o envio bem-sucedido
       setFlightIcao('');
       setFlightNumber('');
@@ -82,14 +79,14 @@ const PirepsFlights = () => {
       setFlightDuration(dayjs('2022-04-17T00:00')); // Reset para a duração inicial
     } catch (error) {
       console.error('Erro ao salvar Pireps:', error.response ? error.response.data : error.message);
-      
+
       // Exibe mensagem de erro
       setDialogMessage('Erro ao salvar Pireps. Verifique os dados e tente novamente.');
       setDialogType('error');
       setOpenDialog(true);
     }
   };
-  
+
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -176,6 +173,22 @@ const PirepsFlights = () => {
                   fullWidth
                 />
               </Grid>
+              {/* Network */}
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Network</InputLabel>
+                  <Select
+                    value={network}
+                    onChange={(e) => setNetwork(e.target.value)}
+                    label="Network"
+                  >
+                    <MenuItem value="Casual">Casual</MenuItem>
+                    <MenuItem value="Training">Training</MenuItem>
+                    <MenuItem value="Expert">Expert</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
 
               {/* Botão de Enviar */}
               <Grid item xs={12}>

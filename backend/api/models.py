@@ -172,16 +172,13 @@ class UserAward(models.Model):
 
 class PirepsFlight (models.Model):
     STATUS_CHOICES = [
-        ('Em análise', 'Em análise'),
-        ('Aprovado', 'Aprovado'),
-        ('Reprovado', 'Reprovado'),
+        ('In Review', 'In Review'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
     ]
-    '''
-    STATUS_EVENTOS = [
-        ('N', 'Não'),
-        ('S', 'Sim'),
-    ]
-'''
+    
+   
+
 
     aircraft_choices = CHOICE_AIRCRAFT
     flight_icao =  models.CharField(max_length=10, null=True)
@@ -192,6 +189,7 @@ class PirepsFlight (models.Model):
     pilot = models.ForeignKey(User, on_delete=models.CASCADE)
     flight_duration = models.DurationField(null=True, blank=True)     
     registration_date = models.DateTimeField(default=timezone.now)
+    network = models.CharField(max_length=200, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Em análise')
     # Outros campos relevantes sobre o voo
 

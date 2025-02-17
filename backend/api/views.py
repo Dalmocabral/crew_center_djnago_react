@@ -67,3 +67,16 @@ class PirepsFlightViewset(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(pilot=self.request.user, status='Em análise')  # Define o piloto e o status fixamente
+
+
+
+class MyFlightsViewSet(viewsets.ReadOnlyModelViewSet):  
+    """ViewSet para listar os voos do usuário logado."""
+    serializer_class = PirepsFlightSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def list(self, request):
+        queryset = PirepsFlight.objects.filter(pilot=request.user)
+        serializer = self.serializer_class(queryset, many=True)
+
+        return Response(serializer.data)

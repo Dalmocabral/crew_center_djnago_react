@@ -51,4 +51,7 @@ class PirepsFlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = PirepsFlight
         fields = ('id', 'flight_icao', 'flight_number', 'departure_airport', 'arrival_airport', 
-                  'aircraft', 'flight_duration', 'registration_date')  # Removemos 'pilot' e 'status'
+                  'aircraft', 'flight_duration', 'network', 'registration_date', 'status')  # Removemos 'pilot' e 'status'
+
+
+
