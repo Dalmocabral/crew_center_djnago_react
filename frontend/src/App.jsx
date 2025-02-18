@@ -12,6 +12,7 @@ import Members from './pages/Members';
 import PirepsFlights from './pages/PirepsFlights';
 import Navbar from './components/Navbar';
 import ProtectedRoutes from './components/ProtectedRoutes';
+import EditPirep from './pages/EditPirep';
 function App() {
   return (
     <Routes>
@@ -19,6 +20,7 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/app" element={<Navbar />}>
+      
         <Route element={<ProtectedRoutes />}>
           {/* Rotas protegidas */}
           <Route path="dashboard" element={<Dashboard />} />
@@ -28,6 +30,8 @@ function App() {
           <Route path="map" element={<Map />} />
           <Route path="members" element={<Members />} /> {/* <-- Nova rota */}
           <Route path="pirepsflights" element={<PirepsFlights />} /> {/* <-- Nova rota */}
+          <Route path="edit-pirep/:id" element={<EditPirep />} />
+          
         </Route>
       </Route>
     </Routes>

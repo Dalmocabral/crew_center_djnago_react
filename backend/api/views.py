@@ -66,7 +66,29 @@ class PirepsFlightViewset(viewsets.ModelViewSet):
     queryset = PirepsFlight.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(pilot=self.request.user, status='Em análise')  # Define o piloto e o status fixamente
+        # Define o piloto e o status ao criar um novo PIREP
+        serializer.save(pilot=self.request.user, status='In Review')
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()  # Obtém o PIREP que está sendo editado
+
+        # Verifica se o usuário autenticado é o piloto que criou o PIREP
+        if instance.pilot != request.user:
+            raise PermissionDenied("Você não tem permissão para editar este PIREP.")
+
+        # Verifica se o status do PIREP é "In Review"
+        if instance.status != "In Review":
+            return Response(
+                {"detail": "Este PIREP não pode ser editado porque não está em análise."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Atualiza o PIREP
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
 
 
 
