@@ -191,6 +191,7 @@ class PirepsFlight (models.Model):
     registration_date = models.DateTimeField(default=timezone.now)
     network = models.CharField(max_length=200, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Em análise')
+    observation = models.TextField(max_length=500, null=True)
     # Outros campos relevantes sobre o voo
 
     def __str__(self):

@@ -80,3 +80,14 @@ class MyFlightsViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.serializer_class(queryset, many=True)
 
         return Response(serializer.data)
+    
+class DashboardViewSet(viewsets.ViewSet):
+    serializer_class = PirepsFlightSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def list(self, request):
+        queryset = PirepsFlight.objects.filter(pilot=request.user)
+        serializer = self.serializer_class(queryset, many=True)
+
+        return Response(serializer.data)
+    

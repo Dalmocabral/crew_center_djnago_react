@@ -8,5 +8,6 @@ router.register('login', LoginViewset, basename='login')  # Login a viewset
 router.register('users', UserViewset, basename='users')  # Users a viewset
 router.register('pirepsflight', PirepsFlightViewset)  # Peripsflight a viewset
 router.register('myflights', MyFlightsViewSet, basename='myflights')  # Registra no roteador
+router.register('dashboard', DashboardViewSet, basename='dashboard')  # Registra no roteador
 
 urlpatterns = router.urls

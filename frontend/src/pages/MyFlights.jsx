@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import Chip from "@mui/material/Chip";
 import PreviewIcon from '@mui/icons-material/Preview';
+import AssignmentLateIcon from "@mui/icons-material/AssignmentLate";
 import { Tooltip, IconButton, Fade } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import AxiosInstance from "../components/AxiosInstance";
@@ -111,10 +112,20 @@ const MyFlights = () => {
                             : "warning"
                       }
                     />
+
+                    {/* Se o status for 'Rejected', exibe o ícone com Tooltip */}
+                    {flight.status === "Rejected" && (
+                     <Tooltip title={flight.observation || "No observation available"}  placement="top" arrow>
+                        <AssignmentLateIcon
+                          sx={{ ml: 1, color: "#0066cc", verticalAlign: "middle" }} // Espaçamento e cor vermelha
+                        />
+                      </Tooltip>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Tooltip
-                      title="Review flight log"
+                      title="Review flight log" 
+                      placement="top"
                       arrow
                       TransitionComponent={Fade} // Aplica o efeito de fade-in
                       TransitionProps={{ timeout: 500 }} // Tempo da animação
