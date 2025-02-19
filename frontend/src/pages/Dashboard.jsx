@@ -116,7 +116,7 @@ const Dashboard = () => {
           <Card sx={{ p: 2, display: "flex", alignItems: "center", gap: 2 }}>
             <AirplanemodeActiveIcon sx={{ fontSize: 40, color: "#1976d2" }} />
             <CardContent>
-              <Typography variant="h6">Último Voo</Typography>
+              <Typography variant="h6">Latest Flight Plan</Typography>
               <Typography variant="h5">
                 {lastFlight
                   ? `${lastFlight.departure_airport} ✈ ${lastFlight.arrival_airport}`
@@ -233,6 +233,21 @@ const Dashboard = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      {/* Dialog de Confirmação */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Confirmar Exclusão</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Tem certeza de que deseja excluir este voo?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error">
+            Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
