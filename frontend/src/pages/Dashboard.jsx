@@ -25,7 +25,6 @@ import {
   Grid,
 } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-
 import FlightIcon from "@mui/icons-material/Flight";
 import AirplanemodeActiveIcon from "@mui/icons-material/AirplanemodeActive";
 import PreviewIcon from "@mui/icons-material/Preview";
@@ -81,23 +80,33 @@ const Dashboard = () => {
     }
   };
 
-  // Função para converter duração para horas decimais
-  const convertToHours = (duration) => {
-    if (!duration) return 0;
-    const parts = duration.split(":");
-    const hours = parseInt(parts[0]);
-    const minutes = parseInt(parts[1]);
-    return hours + minutes / 60;
+  // Função para somar durações no formato HH:MM
+  const sumDurations = (durations) => {
+    let totalMinutes = 0;
+
+    durations.forEach((duration) => {
+      if (!duration) return;
+      const parts = duration.split(":");
+      const hours = parseInt(parts[0]);
+      const minutes = parseInt(parts[1]);
+      totalMinutes += hours * 60 + minutes;
+    });
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    return `${hours}:${minutes.toString().padStart(2, "0")}`;
   };
 
   // Último voo registrado
   const lastFlight = flights.length > 0 ? flights[0] : null;
-  
-  // Total de horas (somente Approved)
-  const totalHours = flights
-    .filter((flight) => flight.status === "Approved") // Filtra apenas os aprovados
-    .reduce((acc, flight) => acc + convertToHours(flight.flight_duration), 0)
-    .toFixed(2);
+
+  // Total de horas no formato HH:MM (somente Approved)
+  const totalDuration = sumDurations(
+    flights
+      .filter((flight) => flight.status === "Approved")
+      .map((flight) => flight.flight_duration)
+  );
 
   // Total de voos (somente Approved)
   const totalFlights = flights.filter((flight) => flight.status === "Approved").length;
@@ -110,7 +119,6 @@ const Dashboard = () => {
 
       {/* Cards com informações */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        
         {/* Card 1: Último voo registrado */}
         <Grid item xs={12} md={4}>
           <Card sx={{ p: 2, display: "flex", alignItems: "center", gap: 2 }}>
@@ -132,7 +140,7 @@ const Dashboard = () => {
             <AccessTimeIcon sx={{ fontSize: 40, color: "#ff9800" }} />
             <CardContent>
               <Typography variant="h6">Total de Horas</Typography>
-              <Typography variant="h5">{totalHours}h</Typography>
+              <Typography variant="h5">{totalDuration}h</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -182,29 +190,29 @@ const Dashboard = () => {
                   />
                 </TableCell>
                 <TableCell>
-                <Tooltip
-                      title="Review flight log" 
-                      placement="top"
-                      arrow
-                      TransitionComponent={Fade} // Aplica o efeito de fade-in
-                      TransitionProps={{ timeout: 500 }} // Tempo da animação
-                      PopperProps={{
-                        modifiers: [
-                          {
-                            name: "preventOverflow",
-                            options: { boundary: "window" },
-                          },
-                          {
-                            name: "offset",
-                            options: { offset: [0, 10] }, // Move o tooltip para baixo
-                          },
-                        ],
-                      }}
-                    >
-                      <IconButton component="a" href="/detalhes">
-                        <PreviewIcon />
-                      </IconButton>
-                    </Tooltip>
+                  <Tooltip
+                    title="Review flight log"
+                    placement="top"
+                    arrow
+                    TransitionComponent={Fade}
+                    TransitionProps={{ timeout: 500 }}
+                    PopperProps={{
+                      modifiers: [
+                        {
+                          name: "preventOverflow",
+                          options: { boundary: "window" },
+                        },
+                        {
+                          name: "offset",
+                          options: { offset: [0, 10] },
+                        },
+                      ],
+                    }}
+                  >
+                    <IconButton component="a" href="/detalhes">
+                      <PreviewIcon />
+                    </IconButton>
+                  </Tooltip>
                   <Tooltip title="Edit" placement="top" arrow>
                     <span>
                       <IconButton
@@ -215,7 +223,6 @@ const Dashboard = () => {
                       </IconButton>
                     </span>
                   </Tooltip>
-
                   <Tooltip title="Delete" placement="top" arrow>
                     <span>
                       <IconButton
@@ -233,6 +240,7 @@ const Dashboard = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
       {/* Dialog de Confirmação */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Confirmar Exclusão</DialogTitle>
