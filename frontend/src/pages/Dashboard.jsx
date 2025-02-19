@@ -60,6 +60,7 @@ const Dashboard = () => {
               <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Dep</TableCell>
               <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Arr</TableCell>
               <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Date</TableCell>
+              <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Network</TableCell>
               <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Aircraft</TableCell>
               <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Status</TableCell>
               <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Action</TableCell>
@@ -72,6 +73,7 @@ const Dashboard = () => {
                 <TableCell>{flight.departure_airport}</TableCell>
                 <TableCell>{flight.arrival_airport}</TableCell>
                 <TableCell>{dayjs(flight.registration_date).format("MM/DD/YYYY")}</TableCell>
+                <TableCell><Chip label={flight.network || "N/A"} color="primary" /></TableCell>
                 <TableCell>{flight.aircraft}</TableCell>
                 <TableCell>
                   <Chip
@@ -80,8 +82,8 @@ const Dashboard = () => {
                       flight.status === "Approved"
                         ? "success"
                         : flight.status === "Rejected"
-                        ? "error"
-                        : "warning"
+                          ? "error"
+                          : "warning"
                     }
                   />
                   {flight.status === "Rejected" && (
@@ -101,7 +103,7 @@ const Dashboard = () => {
                     <span>
                       <IconButton
                         onClick={() => handleEdit(flight.id)}
-                        disabled={flight.status !== "In Review"}
+                        disabled={flight.status === "Approved" || flight.status === "Rejected"} // Edit desabilitado para Approved e Rejected
                       >
                         <EditIcon />
                       </IconButton>
@@ -110,12 +112,16 @@ const Dashboard = () => {
 
                   <Tooltip title="Delete" placement="top" arrow>
                     <span>
-                      <IconButton color="error">
+                      <IconButton
+                        color="error"
+                        disabled={flight.status === "Approved"} // Delete desabilitado apenas para Approved
+                      >
                         <DeleteIcon />
                       </IconButton>
                     </span>
                   </Tooltip>
                 </TableCell>
+
               </TableRow>
             ))}
           </TableBody>
