@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from .serializers import *
 from django.contrib.auth import get_user_model, authenticate
 from knox.models import AuthToken
+from django.db.models import Sum, Count
+from rest_framework.decorators import action
 
 User = get_user_model()
 
@@ -107,8 +109,31 @@ class DashboardViewSet(viewsets.ViewSet):
     permission_classes = [permissions.AllowAny]
 
     def list(self, request):
-        queryset = PirepsFlight.objects.filter(pilot=request.user)
-        serializer = self.serializer_class(queryset, many=True)
-
+        # Dados do usuário logado
+        user_flights = PirepsFlight.objects.filter(pilot=request.user)
+        serializer = self.serializer_class(user_flights, many=True)
         return Response(serializer.data)
-    
+
+    @action(detail=False, methods=["get"])
+    def rankings(self, request):
+        
+        # Top 5 Duração de Voo
+        top_duration = (
+            PirepsFlight.objects.filter(status="Approved")
+            .values("pilot__first_name", "pilot__last_name")  # Use o campo correto para o nome do piloto
+            .annotate(total_duration=Sum("flight_duration"))
+            .order_by("-total_duration")[:5]
+        )
+
+        # Top 5 Total de Voos
+        top_flights = (
+            PirepsFlight.objects.filter(status="Approved")
+            .values("pilot__first_name", "pilot__last_name")  # Use o campo correto para o nome do piloto
+            .annotate(total_flights=Count("id"))
+            .order_by("-total_flights")[:5]
+        )
+
+        return Response({
+            "top_duration": list(top_duration),
+            "top_flights": list(top_flights),
+        })

@@ -10,4 +10,5 @@ router.register('pirepsflight', PirepsFlightViewset)  # Peripsflight a viewset
 router.register('myflights', MyFlightsViewSet, basename='myflights')  # Registra no roteador
 router.register('dashboard', DashboardViewSet, basename='dashboard')  # Registra no roteador
 
+
 urlpatterns = router.urls
