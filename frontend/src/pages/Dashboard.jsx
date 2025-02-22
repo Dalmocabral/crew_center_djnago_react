@@ -323,7 +323,7 @@ const Dashboard = () => {
                 </TableCell>
                 <TableCell>
                   <Tooltip title="Review flight log" placement="top" arrow>
-                    <IconButton component="a" href="/detalhes">
+                    <IconButton component="a"  href={`/app/briefing/${flight.id}`}>
                       <PreviewIcon />
                     </IconButton>
                   </Tooltip>

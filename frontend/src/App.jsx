@@ -13,6 +13,7 @@ import PirepsFlights from './pages/PirepsFlights';
 import Navbar from './components/Navbar';
 import ProtectedRoutes from './components/ProtectedRoutes';
 import EditPirep from './pages/EditPirep';
+import Briefing from './pages/briefing';
 function App() {
   return (
     <Routes>
@@ -31,6 +32,7 @@ function App() {
           <Route path="members" element={<Members />} /> {/* <-- Nova rota */}
           <Route path="pirepsflights" element={<PirepsFlights />} /> {/* <-- Nova rota */}
           <Route path="edit-pirep/:id" element={<EditPirep />} />
+          <Route path="briefing/:id" element={<Briefing />} />
           
         </Route>
       </Route>
