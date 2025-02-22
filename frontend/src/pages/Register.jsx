@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { TextField, Button, Container, Typography, Box, IconButton, InputAdornment, Snackbar, Alert } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import AxiosInstance from "../components/AxiosInstance";
-import ReactFlagsSelect from "react-flags-select"; // Importa o componente de seleção de bandeiras
+import ReactFlagsSelect from "react-flags-select";
+import { debounce } from "lodash"; // Importa o debounce do lodash
 
 const Register = () => {
   const [showPassword1, setShowPassword1] = useState(false);
@@ -12,14 +13,16 @@ const Register = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const [selectedCountry, setSelectedCountry] = useState(""); // Estado para o país selecionado
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [usernameValid, setUsernameValid] = useState(false); // Estado para verificar se o nome de usuário é válido
+  const [usernameLoading, setUsernameLoading] = useState(false); // Estado para indicar carregamento durante a verificação
 
   const {
     control,
     handleSubmit,
     watch,
     reset,
-    setValue, // Adicionado para atualizar os campos
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -27,7 +30,7 @@ const Register = () => {
       last_name: "",
       usernameIFC: "",
       email: "",
-      country: "", // Adiciona o campo country
+      country: "",
       password1: "",
       password2: "",
     },
@@ -35,22 +38,63 @@ const Register = () => {
 
   const navigate = useNavigate();
 
-  // Função para capitalizar a primeira letra de uma string
-  const capitalizeFirstLetter = (str) => {
-    return str.charAt(0).toUpperCase() + str.slice(1);
+  // Função para verificar o nome de usuário IFC
+  const checkUsernameIFC = async (username) => {
+    try {
+      // Prepare request parameters
+      const params = { discourseNames: [username] };
+      const headers = { 'Content-type': 'application/json', 'Accept': 'text/plain' };
+      const url = 'https://api.infiniteflight.com/public/v2/user/stats?apikey=nvo8c790hfa9q3duho2jhgd2jf8tgwqw';
+
+      // Make the request
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(params),
+        headers,
+      });
+
+      // Check if the response is OK (status code 200)
+      if (!response.ok) {
+        return response.status; // Retorna o código de erro (401, 404, etc.)
+      }
+
+      // Convert the response to JSON
+      const data = await response.json();
+
+      // Verifica se o array result não está vazio e se o primeiro elemento possui userId
+      if (data.result && data.result.length > 0 && data.result[0].userId) {
+        return 200; // Nome de usuário válido
+      } else {
+        return 404; // Nome de usuário não encontrado
+      }
+    } catch (error) {
+      console.error("Error checking username IFC:", error);
+      return 500; // Erro interno do servidor
+    }
   };
 
-  // Função para formatar o First Name e Last Name enquanto o usuário digita
-  const handleNameChange = (fieldName, value) => {
-    const capitalizedValue = capitalizeFirstLetter(value);
-    setValue(fieldName, capitalizedValue); // Atualiza o valor do campo
-  };
+  // Função com debounce para verificar o nome de usuário
+  const checkUsernameDebounced = debounce(async (username) => {
+    if (username) {
+      setUsernameLoading(true); // Ativa o estado de carregamento
+      const statusCode = await checkUsernameIFC(username);
+      setUsernameValid(statusCode === 200); // Atualiza o estado de validação
+      setUsernameLoading(false); // Desativa o estado de carregamento
 
-  // Função para atualizar o país selecionado
-  const handleCountryChange = (countryCode) => {
-    setSelectedCountry(countryCode); // Atualiza o estado local
-    setValue("country", countryCode); // Atualiza o valor do campo no formulário
-  };
+      // Exibe feedback visual para o usuário
+      if (statusCode === 200) {
+        setSnackbarMessage("Username IFC is valid.");
+        setSnackbarSeverity("success");
+      } else if (statusCode === 404) {
+        setSnackbarMessage("Invalid IFC username. Please enter a valid username.");
+        setSnackbarSeverity("error");
+      } else {
+        setSnackbarMessage("Error verifying IFC username. Please try again.");
+        setSnackbarSeverity("error");
+      }
+      setSnackbarOpen(true);
+    }
+  }, 500); // 500ms de debounce
 
   const submission = async (data) => {
     try {
@@ -87,10 +131,17 @@ const Register = () => {
       console.error("Registration failed:", error.response ? error.response.data : error.message);
     }
   };
-
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log("Form submitted", data);
-    submission(data);
+
+    // Verifica se o nome de usuário IFC é válido
+    if (usernameValid) {
+      submission(data);
+    } else {
+      setSnackbarMessage("Invalid IFC username. Please enter a valid username.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
   };
 
   const handleCloseSnackbar = () => {
@@ -123,6 +174,7 @@ const Register = () => {
             )}
           />
 
+          {/* Campo Last Name */}
           <Controller
             name="last_name"
             control={control}
@@ -142,7 +194,6 @@ const Register = () => {
               />
             )}
           />
-
 
           {/* Campo Email */}
           <Controller
@@ -181,9 +232,20 @@ const Register = () => {
                 margin="normal"
                 error={!!errors.usernameIFC}
                 helperText={errors.usernameIFC?.message}
+                onBlur={(e) => checkUsernameDebounced(e.target.value)}
+                InputProps={{
+                  endAdornment: usernameLoading ? (
+                    <Typography variant="body2">Checking...</Typography>
+                  ) : usernameValid ? (
+                    <Typography variant="body2" color="success.main">Valid</Typography>
+                  ) : (
+                    <Typography variant="body2" color="error.main">Invalid</Typography>
+                  ),
+                }}
               />
             )}
           />
+
           {/* Campo Country */}
           <Controller
             name="country"
@@ -192,8 +254,11 @@ const Register = () => {
             render={({ field }) => (
               <ReactFlagsSelect
                 selected={selectedCountry}
-                onSelect={handleCountryChange} // Atualiza o país selecionado
-                searchable // Permite pesquisar países
+                onSelect={(countryCode) => {
+                  setSelectedCountry(countryCode);
+                  setValue("country", countryCode);
+                }}
+                searchable
                 placeholder="Select Country"
                 fullWidth
                 className="country-select"
@@ -265,6 +330,7 @@ const Register = () => {
             color="primary"
             fullWidth
             sx={{ mt: 2 }}
+            disabled={!usernameValid} // Desabilita o botão se o nome de usuário não for válido
           >
             Register
           </Button>
