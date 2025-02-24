@@ -14,6 +14,7 @@ import Navbar from './components/Navbar';
 import ProtectedRoutes from './components/ProtectedRoutes';
 import EditPirep from './pages/EditPirep';
 import Briefing from './pages/briefing';
+import AwardDetail from './pages/AwardDetail';
 function App() {
   return (
     <Routes>
@@ -33,6 +34,7 @@ function App() {
           <Route path="pirepsflights" element={<PirepsFlights />} /> {/* <-- Nova rota */}
           <Route path="edit-pirep/:id" element={<EditPirep />} />
           <Route path="briefing/:id" element={<Briefing />} />
+          <Route path="awards/awardDetail/:id" element={<AwardDetail />} />
           
         </Route>
       </Route>

@@ -20,7 +20,6 @@ class RegisterViewSet(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-
 class LoginViewset(viewsets.ViewSet):
     permission_classes = [permissions.AllowAny]
     serializer_class = LoginSerializer
@@ -48,7 +47,6 @@ class LoginViewset(viewsets.ViewSet):
         else:
             return Response(serializer.errors, status=400)
         
-
 class UserViewset(viewsets.ViewSet):
     permission_classes = [permissions.AllowAny]  # Permite acesso sem autenticação
     serializer_class = RegisterSerializer
@@ -61,7 +59,6 @@ class UserViewset(viewsets.ViewSet):
 
         return Response(serializer.data)
     
-
 class PirepsFlightViewset(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = PirepsFlightSerializer
@@ -91,8 +88,6 @@ class PirepsFlightViewset(viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-
 class MyFlightsViewSet(viewsets.ReadOnlyModelViewSet):  
     """ViewSet para listar os voos do usuário logado."""
     serializer_class = PirepsFlightSerializer
@@ -105,6 +100,7 @@ class MyFlightsViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
     
 class DashboardViewSet(viewsets.ViewSet):
+    
     serializer_class = PirepsFlightSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -137,3 +133,38 @@ class DashboardViewSet(viewsets.ViewSet):
             "top_duration": list(top_duration),
             "top_flights": list(top_flights),
         })
+    
+
+class AwardViewSet(viewsets.ModelViewSet):
+    queryset = Award.objects.all()
+    serializer_class = AwardsSerializer
+    permission_classes = [permissions.AllowAny]  # Ou outra permissão, se necessário
+
+class FlightLegViewSet(viewsets.ModelViewSet):
+    queryset = FlightLeg.objects.all()
+    serializer_class = FlightLegSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        award_id = self.request.query_params.get('award', None)
+        if award_id:
+            queryset = queryset.filter(award_id=award_id)
+        return queryset
+
+class AllowedAircraftViewSet(viewsets.ModelViewSet):
+    queryset = AllowedAircraft.objects.all()
+    serializer_class = AllowedAircraftSerializer
+    permission_classes = [permissions.AllowAny]
+
+class AllowedIcaoViewSet(viewsets.ModelViewSet):
+    queryset = AllowedIcao.objects.all()
+    serializer_class = AllowedIcaoSerializer
+    permission_classes = [permissions.AllowAny]
+
+class UserAwardViewSet(viewsets.ModelViewSet):
+    queryset = UserAward.objects.all()
+    serializer_class = UserAwardSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+

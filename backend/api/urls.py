@@ -9,6 +9,11 @@ router.register('users', UserViewset, basename='users')  # Users a viewset
 router.register('pirepsflight', PirepsFlightViewset)  # Peripsflight a viewset
 router.register('myflights', MyFlightsViewSet, basename='myflights')  # Registra no roteador
 router.register('dashboard', DashboardViewSet, basename='dashboard')  # Registra no roteador
+router.register(r'awards', AwardViewSet)
+router.register(r'flight-legs', FlightLegViewSet)
+router.register(r'allowed-aircrafts', AllowedAircraftViewSet)
+router.register(r'allowed-icaos', AllowedIcaoViewSet)
+router.register(r'user-awards', UserAwardViewSet)
 
 
 urlpatterns = router.urls

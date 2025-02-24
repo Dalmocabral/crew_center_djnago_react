@@ -55,3 +55,28 @@ class PirepsFlightSerializer(serializers.ModelSerializer):
         read_only_fields = ('pilot',)  # Impede alteração do piloto
 
 
+class AwardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Award
+        fields = '__all__'
+
+class FlightLegSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FlightLeg
+        fields = '__all__'
+
+class AllowedAircraftSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AllowedAircraft
+        fields = '__all__'
+
+class AllowedIcaoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AllowedIcao
+        fields = '__all__'
+
+class UserAwardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAward
+        fields = '__all__'
+
