@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Tabs,
@@ -14,16 +14,35 @@ import {
   TableHead,
   TableRow,
   Button,
+  List,
+  ListItem,
+  ListItemText,
 } from '@mui/material';
 import AxiosInstance from '../components/AxiosInstance';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Ícones personalizados para o Leaflet
+const icon = L.icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 
 const AwardDetail = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [flightLegs, setFlightLegs] = useState([]);
+  const [airportsData, setAirportsData] = useState({});
   const theme = useTheme();
   const location = useLocation();
   const { award } = location.state || {};
   const navigate = useNavigate();
+  const mapContainer = useRef(null); // Referência para o contêiner do mapa
+  const map = useRef(null); // Referência para a instância do mapa
 
   // Função para buscar as pernas do voo
   const fetchFlightLegs = async () => {
@@ -36,46 +55,14 @@ const AwardDetail = () => {
     }
   };
 
-  // Função para calcular a distância entre duas coordenadas
-  const haversineDistance = (coords1, coords2) => {
-    const toRad = (x) => (x * Math.PI) / 180;
-    const [lat1, lon1] = coords1;
-    const [lat2, lon2] = coords2;
-
-    const R = 3440.065; // Raio da Terra em milhas náuticas
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Retorna a distância em milhas náuticas
-  };
-
-  // Função para buscar dados dos aeroportos e calcular distâncias
-  const calculateDistances = async () => {
+  // Função para buscar os dados dos aeroportos
+  const fetchAirports = async () => {
     try {
       const response = await fetch(
         'https://raw.githubusercontent.com/mwgg/Airports/master/airports.json'
       );
-      const airportsData = await response.json();
-
-      const updatedFlightLegs = flightLegs.map((leg) => {
-        const fromAirport = airportsData[leg.from_airport];
-        const toAirport = airportsData[leg.to_airport];
-
-        if (fromAirport && toAirport) {
-          const fromCoords = [fromAirport.lat, fromAirport.lon];
-          const toCoords = [toAirport.lat, toAirport.lon];
-          const distance = Math.round(haversineDistance(fromCoords, toCoords));
-          return { ...leg, distance: `${distance} NM` };
-        } else {
-          return { ...leg, distance: 'N/A' };
-        }
-      });
-
-      setFlightLegs(updatedFlightLegs);
+      const data = await response.json();
+      setAirportsData(data);
     } catch (error) {
       console.error('Erro ao buscar dados dos aeroportos:', error);
     }
@@ -83,17 +70,77 @@ const AwardDetail = () => {
 
   // Efeito para buscar as pernas do voo quando o prêmio é carregado
   useEffect(() => {
-    if (activeTab === 1) {
+    if (activeTab === 1 || activeTab === 2) {
       fetchFlightLegs();
     }
   }, [activeTab, award]);
 
-  // Efeito para calcular as distâncias quando as pernas do voo são carregadas
+  // Efeito para buscar os dados dos aeroportos
   useEffect(() => {
-    if (flightLegs.length > 0) {
-      calculateDistances();
+    fetchAirports();
+  }, []);
+
+  // Efeito para inicializar o mapa
+  useEffect(() => {
+    if (activeTab === 2 && flightLegs.length > 0 && !map.current) {
+      // Inicializa o mapa
+      map.current = L.map(mapContainer.current).setView([0, 0], 2);
+
+      // Adiciona a camada de tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map.current);
+
+      // Adiciona marcadores e polylines
+      flightLegs.forEach((leg) => {
+        const fromAirport = airportsData[leg.from_airport];
+        const toAirport = airportsData[leg.to_airport];
+
+        if (fromAirport && toAirport) {
+          // Adiciona marcadores
+          L.marker([fromAirport.lat, fromAirport.lon], { icon })
+            .addTo(map.current)
+            .bindPopup(`<strong>${fromAirport.icao}</strong>`);
+
+          L.marker([toAirport.lat, toAirport.lon], { icon })
+            .addTo(map.current)
+            .bindPopup(`<strong>${toAirport.icao}</strong>`);
+
+          // Adiciona polyline
+          L.polyline(
+            [
+              [fromAirport.lat, fromAirport.lon],
+              [toAirport.lat, toAirport.lon],
+            ],
+            { color: leg.pirep_status === 'Approved' ? 'green' : 'black' }
+          ).addTo(map.current);
+        }
+      });
+
+      // Ajusta o zoom e o centro do mapa para incluir todos os marcadores
+      const bounds = L.latLngBounds(
+        flightLegs
+          .map((leg) => {
+            const fromAirport = airportsData[leg.from_airport];
+            const toAirport = airportsData[leg.to_airport];
+            return [
+              [fromAirport?.lat, fromAirport?.lon],
+              [toAirport?.lat, toAirport?.lon],
+            ];
+          })
+          .flat()
+      );
+      map.current.fitBounds(bounds, { padding: [50, 50] });
     }
-  }, [flightLegs]);
+
+    // Limpeza ao desmontar o componente ou mudar de aba
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, [activeTab, flightLegs, airportsData]);
 
   // Função para mudar a aba ativa
   const handleTabChange = (event, newValue) => {
@@ -119,33 +166,9 @@ const AwardDetail = () => {
             },
           }}
         >
-          <Tab
-            label="Description"
-            sx={{
-              color: theme.palette.text.primary,
-              '&.Mui-selected': {
-                color: '#2196F3',
-              },
-            }}
-          />
-          <Tab
-            label="Leg Overview"
-            sx={{
-              color: theme.palette.text.primary,
-              '&.Mui-selected': {
-                color: '#2196F3',
-              },
-            }}
-          />
-          <Tab
-            label="Tour Status"
-            sx={{
-              color: theme.palette.text.primary,
-              '&.Mui-selected': {
-                color: '#2196F3',
-              },
-            }}
-          />
+          <Tab label="Description" />
+          <Tab label="Leg Overview" />
+          <Tab label="Tour Status" />
         </Tabs>
       </Paper>
 
@@ -208,7 +231,7 @@ const AwardDetail = () => {
                           onClick={() => {
                             navigate('/app/pirepsflights', { state: { leg } });
                           }}
-                          disabled={leg.pirep_status === 'Approved'} // Desabilita o botão se o status for "Approved"
+                          disabled={leg.pirep_status === 'Approved'}
                         >
                           {leg.pirep_status === 'Approved' ? 'Aprovado' : 'Registrar Voo'}
                         </Button>
@@ -229,6 +252,34 @@ const AwardDetail = () => {
             <Typography paragraph>
               Aqui você pode ver o status atual do tour.
             </Typography>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              {/* Mapa */}
+              <Box sx={{ flex: 2, height: '500px' }}>
+                <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
+              </Box>
+
+              {/* Lista de pernas */}
+              <Box sx={{ flex: 1 }}>
+                <List>
+                  {flightLegs.map((leg, index) => (
+                    <ListItem
+                      key={leg.id}
+                      sx={{
+                        backgroundColor:
+                          leg.pirep_status === 'Approved' ? theme.palette.success.light : 'inherit',
+                        mb: 1,
+                        borderRadius: 1,
+                      }}
+                    >
+                      <ListItemText
+                        primary={`Leg ${index + 1}: ${leg.from_airport} → ${leg.to_airport}`}
+                        secondary={`Status: ${leg.pirep_status || 'Pendente'}`}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            </Box>
           </Box>
         )}
       </Box>
