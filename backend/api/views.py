@@ -151,6 +151,18 @@ class FlightLegViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(award_id=award_id)
         return queryset
 
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        for leg_data in response.data:
+            # Busca o PIREP associado à leg
+            pirep = PirepsFlight.objects.filter(
+                departure_airport=leg_data['from_airport'],
+                arrival_airport=leg_data['to_airport']
+            ).first()
+            # Adiciona o status do PIREP à resposta
+            leg_data['pirep_status'] = pirep.status if pirep else None
+        return response
+
 class AllowedAircraftViewSet(viewsets.ModelViewSet):
     queryset = AllowedAircraft.objects.all()
     serializer_class = AllowedAircraftSerializer

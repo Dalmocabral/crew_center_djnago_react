@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom'; // Adicione useNavigate
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Tabs,
   Tab,
@@ -23,7 +23,7 @@ const AwardDetail = () => {
   const theme = useTheme();
   const location = useLocation();
   const { award } = location.state || {};
-  const navigate = useNavigate(); // Hook para navegação
+  const navigate = useNavigate();
 
   // Função para buscar as pernas do voo
   const fetchFlightLegs = async () => {
@@ -206,11 +206,11 @@ const AwardDetail = () => {
                           variant="contained"
                           color="primary"
                           onClick={() => {
-                            // Navegar para a rota pirepsflights com os dados da leg no estado
                             navigate('/app/pirepsflights', { state: { leg } });
                           }}
+                          disabled={leg.pirep_status === 'Approved'} // Desabilita o botão se o status for "Approved"
                         >
-                          Registrar Voo
+                          {leg.pirep_status === 'Approved' ? 'Aprovado' : 'Registrar Voo'}
                         </Button>
                       </TableCell>
                     </TableRow>
