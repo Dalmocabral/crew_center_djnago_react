@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -20,24 +21,34 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { TimeField } from '@mui/x-date-pickers/TimeField';
 import dayjs from 'dayjs';
-import AxiosInstance from '../components/AxiosInstance'; // Importe o AxiosInstance
+import AxiosInstance from '../components/AxiosInstance';
 import aircraftChoices from '../data/aircraftChoices';
 
 const PirepsFlights = () => {
+  const location = useLocation();
+  const { leg } = location.state || {}; // Acesse os dados da leg
+
   // Estados para os campos do formulário
   const [flightIcao, setFlightIcao] = useState('');
   const [flightNumber, setFlightNumber] = useState('');
-  const [departureAirport, setDepartureAirport] = useState('');
-  const [arrivalAirport, setArrivalAirport] = useState('');
+  const [departureAirport, setDepartureAirport] = useState(leg?.from_airport || '');
+  const [arrivalAirport, setArrivalAirport] = useState(leg?.to_airport || '');
   const [aircraft, setAircraft] = useState('');
-  const [network, setNetwork] = useState('')
-  const [flightDuration, setFlightDuration] = useState(dayjs('2022-04-17T00:00')); // Valor inicial
+  const [network, setNetwork] = useState('');
+  const [flightDuration, setFlightDuration] = useState(dayjs('2022-04-17T00:00'));
+
+  // Use useEffect para preencher os campos quando a leg for carregada
+  useEffect(() => {
+    if (leg) {
+      setDepartureAirport(leg.from_airport);
+      setArrivalAirport(leg.to_airport);
+    }
+  }, [leg]);
 
   // Estado do Dialog
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
   const [dialogType, setDialogType] = useState('success'); // 'success' ou 'error'
-
 
   // Função para fechar o Dialog
   const handleCloseDialog = () => {
@@ -87,7 +98,6 @@ const PirepsFlights = () => {
     }
   };
 
-
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Container maxWidth="md">
@@ -101,6 +111,16 @@ const PirepsFlights = () => {
 
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
+              {/* Leg Number */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Leg Number"
+                  value={leg?.leg_number || ''}
+                  fullWidth
+                  disabled // Campo apenas para leitura
+                />
+              </Grid>
+
               {/* Flight ICAO */}
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -173,6 +193,7 @@ const PirepsFlights = () => {
                   fullWidth
                 />
               </Grid>
+
               {/* Network */}
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth required>
@@ -188,7 +209,6 @@ const PirepsFlights = () => {
                   </Select>
                 </FormControl>
               </Grid>
-
 
               {/* Botão de Enviar */}
               <Grid item xs={12}>
@@ -211,7 +231,6 @@ const PirepsFlights = () => {
           <Button onClick={handleCloseDialog} color="primary">OK</Button>
         </DialogActions>
       </Dialog>
-
     </LocalizationProvider>
   );
 };

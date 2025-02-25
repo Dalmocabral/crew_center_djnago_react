@@ -62,14 +62,22 @@ class FlightLeg(models.Model):
     award = models.ForeignKey(Award, related_name='flight_legs', on_delete=models.CASCADE)
     from_airport = models.CharField(max_length=4)
     to_airport = models.CharField(max_length=4)
+    leg_number = models.PositiveIntegerField(editable=False)  # Número da perna
 
     def save(self, *args, **kwargs):
         self.from_airport = self.from_airport.upper()
         self.to_airport = self.to_airport.upper()
+
+        if not self.leg_number:  # Se for a primeira vez que está sendo salvo
+            last_leg = FlightLeg.objects.filter(award=self.award).order_by('-leg_number').first()
+            self.leg_number = (last_leg.leg_number + 1) if last_leg else 1  # Define o próximo número sequencial
+
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.from_airport} to {self.to_airport}"
+        return f"Leg {self.leg_number}: {self.from_airport} to {self.to_airport}"
+
+
 
 class AllowedAircraft(models.Model):
     award = models.ForeignKey(Award, related_name='allowed_aircrafts', on_delete=models.CASCADE)

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom'; // Adicione useNavigate
 import {
   Tabs,
   Tab,
@@ -13,21 +13,23 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Button,
 } from '@mui/material';
 import AxiosInstance from '../components/AxiosInstance';
 
 const AwardDetail = () => {
-  const [activeTab, setActiveTab] = useState(0); // Estado para controlar a aba ativa
-  const [flightLegs, setFlightLegs] = useState([]); // Estado para armazenar as pernas do voo
-  const theme = useTheme(); // Hook para acessar o tema atual (claro ou escuro)
-  const location = useLocation(); // Hook para acessar o estado da navegação
-  const { award } = location.state || {}; // Dados do prêmio passados no estado
+  const [activeTab, setActiveTab] = useState(0);
+  const [flightLegs, setFlightLegs] = useState([]);
+  const theme = useTheme();
+  const location = useLocation();
+  const { award } = location.state || {};
+  const navigate = useNavigate(); // Hook para navegação
 
   // Função para buscar as pernas do voo
   const fetchFlightLegs = async () => {
-    if (!award) return; // Se não houver prêmio selecionado, não faz nada
+    if (!award) return;
     try {
-      const response = await AxiosInstance.get(`/flight-legs/?award=${award.id}`); // Filtra pelo award_id
+      const response = await AxiosInstance.get(`/flight-legs/?award=${award.id}`);
       setFlightLegs(response.data);
     } catch (error) {
       console.error('Erro ao buscar pernas do voo:', error);
@@ -82,7 +84,6 @@ const AwardDetail = () => {
   // Efeito para buscar as pernas do voo quando o prêmio é carregado
   useEffect(() => {
     if (activeTab === 1) {
-      // Busca as pernas apenas quando a aba "Leg Overview" está ativa
       fetchFlightLegs();
     }
   }, [activeTab, award]);
@@ -105,7 +106,7 @@ const AwardDetail = () => {
       <Paper
         sx={{
           mb: 3,
-          backgroundColor: theme.palette.background.paper, // Cor de fundo adaptável ao tema
+          backgroundColor: theme.palette.background.paper,
         }}
       >
         <Tabs
@@ -114,16 +115,16 @@ const AwardDetail = () => {
           centered
           sx={{
             '& .MuiTabs-indicator': {
-              backgroundColor: '#2196F3', // Cor azul para a barra de indicador
+              backgroundColor: '#2196F3',
             },
           }}
         >
           <Tab
             label="Description"
             sx={{
-              color: theme.palette.text.primary, // Cor do texto adaptável ao tema
+              color: theme.palette.text.primary,
               '&.Mui-selected': {
-                color: '#2196F3', // Cor azul para a aba selecionada
+                color: '#2196F3',
               },
             }}
           />
@@ -145,15 +146,6 @@ const AwardDetail = () => {
               },
             }}
           />
-          <Tab
-            label="PIREP"
-            sx={{
-              color: theme.palette.text.primary,
-              '&.Mui-selected': {
-                color: '#2196F3',
-              },
-            }}
-          />
         </Tabs>
       </Paper>
 
@@ -164,7 +156,6 @@ const AwardDetail = () => {
             <Typography variant="h4" gutterBottom>
               {award?.name || 'No Award Selected'}
             </Typography>
-            {/* Exibe a imagem do prêmio */}
             {award?.link_image && (
               <Box
                 component="img"
@@ -178,7 +169,6 @@ const AwardDetail = () => {
                 }}
               />
             )}
-            {/* Exibe a descrição do prêmio */}
             <Typography paragraph>
               {award?.description || 'No description available.'}
             </Typography>
@@ -193,7 +183,6 @@ const AwardDetail = () => {
             <Typography paragraph>
               Aqui você verá uma visão geral das pernas do tour.
             </Typography>
-            {/* Tabela de pernas do voo */}
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -202,6 +191,7 @@ const AwardDetail = () => {
                     <TableCell>Departure</TableCell>
                     <TableCell>Destination</TableCell>
                     <TableCell>Distance</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -211,6 +201,18 @@ const AwardDetail = () => {
                       <TableCell>{leg.from_airport}</TableCell>
                       <TableCell>{leg.to_airport}</TableCell>
                       <TableCell>{leg.distance || 'Calculating...'}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => {
+                            // Navegar para a rota pirepsflights com os dados da leg no estado
+                            navigate('/app/pirepsflights', { state: { leg } });
+                          }}
+                        >
+                          Registrar Voo
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -226,17 +228,6 @@ const AwardDetail = () => {
             </Typography>
             <Typography paragraph>
               Aqui você pode ver o status atual do tour.
-            </Typography>
-          </Box>
-        )}
-
-        {activeTab === 3 && (
-          <Box id="pirep">
-            <Typography variant="h4" gutterBottom>
-              PIREP
-            </Typography>
-            <Typography paragraph>
-              Aqui você pode enviar ou visualizar relatórios de voo (PIREPs).
             </Typography>
           </Box>
         )}
