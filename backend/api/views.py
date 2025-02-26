@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from .serializers import *
@@ -134,7 +136,6 @@ class DashboardViewSet(viewsets.ViewSet):
             "top_flights": list(top_flights),
         })
     
-
 class AwardViewSet(viewsets.ModelViewSet):
     queryset = Award.objects.all()
     serializer_class = AwardsSerializer
@@ -184,3 +185,11 @@ class UserAwardViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Retorna apenas os UserAward do usuário logado, incluindo os dados do Award
         return UserAward.objects.filter(user=self.request.user).select_related('award')
+
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]  # Apenas usuários autenticados podem acessar
+
+    def get(self, request):
+        user = request.user  # Obtém o usuário logado
+        serializer = UserSerializer(user)  # Serializa os dados do usuário
+        return Response(serializer.data)  # Retorna os dados serializados

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import AxiosInstance from '../components/AxiosInstance';
 import { 
-  Card, CardContent, CardMedia, Typography, Grid, CircularProgress, Box, 
+  Card, CardContent, Typography, Grid, CircularProgress, Box, 
   Divider
 } from '@mui/material';
-
-const defaultAvatar = 'https://newsky.app/api/pilot/avatar/default'; // Imagem padrão para usuários sem foto
+import Gravatar from '../components/Gravatar';
 
 const Members = () => {
   const [myData, setMyData] = useState([]);
@@ -48,18 +47,19 @@ const Members = () => {
                 flexDirection: 'column',
                 justifyContent: 'space-between'
               }}>
-                <CardMedia
-                  component="img"
-                  image={item.avatar || defaultAvatar} // Usa avatar ou imagem padrão
-                  alt={item.name}
-                  sx={{ 
-                    borderRadius: '50%', 
-                    width: 80, 
-                    height: 80, 
-                    mx: 'auto', 
-                    mt: 2 
-                  }}
-                />
+                {/* Substitua a CardMedia pelo componente Gravatar */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  mt: 2 
+                }}>
+                  <Gravatar
+                    email={item.email} // Passa o e-mail do usuário
+                    size={80} // Tamanho da imagem
+                    alt={`Imagem de perfil de ${item.first_name} ${item.last_name}`} // Texto alternativo
+                    style={{ borderRadius: '50%' }} // Estilo personalizado
+                  />
+                </Box>
                 <CardContent sx={{ p: 1 }}>
                   <Divider />
                   <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 'bold' }}>
