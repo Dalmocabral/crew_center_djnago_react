@@ -43,11 +43,14 @@ const MyAwards = () => {
     const userAward = userAwards.find((ua) => ua.award === award.id);
     return {
       ...award,
-      progress: userAward ? userAward.progress : 0, // Se não houver progresso, assume 0
+      progress: userAward ? userAward.progress : 0,
       start_date: userAward ? userAward.start_date : null,
       end_date: userAward ? userAward.end_date : null,
     };
   });
+
+  // Filtrar apenas os prêmios com progresso maior que 0
+  const filteredData = combinedData.filter((award) => award.progress > 0);
 
   if (loading) {
     return (
@@ -80,7 +83,7 @@ const MyAwards = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {combinedData.map((award) => (
+          {filteredData.map((award) => (
             <TableRow key={award.id}>
               <TableCell>
                 <div style={{ display: 'flex', alignItems: 'center' }}>

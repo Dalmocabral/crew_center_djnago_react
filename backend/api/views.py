@@ -141,11 +141,13 @@ class AwardViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AllowAny]  # Ou outra permissão, se necessário
 
 class FlightLegViewSet(viewsets.ModelViewSet):
-    queryset = FlightLeg.objects.all()
     serializer_class = FlightLegSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Apenas usuários autenticados
+    queryset = FlightLeg.objects.all()  # Define o queryset padrão
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        # Filtra as FlightLeg com base no award_id
+        queryset = super().get_queryset()  # Usa o queryset padrão
         award_id = self.request.query_params.get('award', None)
         if award_id:
             queryset = queryset.filter(award_id=award_id)
@@ -154,10 +156,11 @@ class FlightLegViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         for leg_data in response.data:
-            # Busca o PIREP associado à leg
+            # Busca o PIREP associado à leg para o usuário logado
             pirep = PirepsFlight.objects.filter(
                 departure_airport=leg_data['from_airport'],
-                arrival_airport=leg_data['to_airport']
+                arrival_airport=leg_data['to_airport'],
+                pilot=request.user  # Filtra PIREPs do usuário logado (usando o campo correto)
             ).first()
             # Adiciona o status do PIREP à resposta
             leg_data['pirep_status'] = pirep.status if pirep else None
@@ -174,9 +177,10 @@ class AllowedIcaoViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AllowAny]
 
 class UserAwardViewSet(viewsets.ModelViewSet):
-    queryset = UserAward.objects.all()
     serializer_class = UserAwardSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = UserAward.objects.none()  # Define um queryset padrão
 
-
-
+    def get_queryset(self):
+        # Retorna apenas os UserAward do usuário logado, incluindo os dados do Award
+        return UserAward.objects.filter(user=self.request.user).select_related('award')
