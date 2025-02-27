@@ -184,10 +184,6 @@ class PirepsFlight (models.Model):
         ('Approved', 'Approved'),
         ('Rejected', 'Rejected'),
     ]
-    
-   
-
-
     aircraft_choices = CHOICE_AIRCRAFT
     flight_icao =  models.CharField(max_length=10, null=True)
     flight_number = models.CharField(max_length=10)
@@ -204,3 +200,14 @@ class PirepsFlight (models.Model):
 
     def __str__(self):
         return f"{self.flight_number} - {self.pilot.first_name}"
+    
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    image = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)  # Novo campo
+
+    def __str__(self):
+        return f"Notification for {self.recipient.username}: {self.message}"

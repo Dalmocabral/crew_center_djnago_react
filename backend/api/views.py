@@ -193,3 +193,17 @@ class CurrentUserView(APIView):
         user = request.user  # Obtém o usuário logado
         serializer = UserSerializer(user)  # Serializa os dados do usuário
         return Response(serializer.data)  # Retorna os dados serializados
+    
+class NotificationViewSet(viewsets.ModelViewSet):
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Notification.objects.filter(recipient=self.request.user, is_read=False).order_by('-created_at')
+
+    @action(detail=True, methods=['POST'])
+    def mark_as_read(self, request, pk=None):
+        notification = self.get_object()
+        notification.is_read = True
+        notification.save()
+        return Response({"status": "Notificação marcada como lida"}, status=status.HTTP_200_OK)

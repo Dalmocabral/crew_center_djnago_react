@@ -18,6 +18,7 @@ import {
   MenuItem,
   Avatar,
   Tooltip,
+  Badge,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -32,6 +33,9 @@ import {
   Group as GroupIcon,
   Assignment as PirepsIcon,
   Notifications as NotificationsIcon,
+  Close as CloseIcon,
+  FlightTakeoff as FlightTakeoffIcon,
+  Error as ErrorIcon,
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { lightTheme, darkTheme } from '../theme';
@@ -43,7 +47,6 @@ const drawerWidth = 240;
 
 const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/app/dashboard' },
- 
   { text: 'Members', icon: <GroupIcon />, path: '/app/members' },
   { text: 'Awards', icon: <AwardsIcon />, path: '/app/awards' },
   { text: 'My Flights', icon: <FlightsIcon />, path: '/app/my-flights' },
@@ -71,9 +74,46 @@ const DrawerContent = ({ darkMode, handleThemeChange, navigate, location, handle
         <Switch checked={darkMode} onChange={handleThemeChange} sx={{ ml: 1 }} />
       </ListItem>
     </List>
-    
+    <Divider />
+    <List>
+      <ListItem button onClick={handleLogout}>
+        <ListItemIcon>
+          <LogoutIcon />
+        </ListItemIcon>
+        <ListItemText primary="Logout" />
+      </ListItem>
+    </List>
   </div>
 );
+
+const useNotifications = () => {
+  const [notifications, setNotifications] = useState([]);
+  const [error, setError] = useState(null);
+
+  const fetchNotifications = () => {
+    AxiosInstance.get("notifications/")
+      .then((res) => {
+        setNotifications(res.data);
+        setError(null);
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar notificações:", error);
+        setError("Erro ao carregar notificações. Tente novamente mais tarde.");
+      });
+  };
+
+  const handleDismissNotification = (id) => {
+    AxiosInstance.post(`notifications/${id}/mark_as_read/`)
+      .then(() => {
+        setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+      })
+      .catch((error) => {
+        console.error("Erro ao marcar notificação como lida:", error);
+      });
+  };
+
+  return { notifications, error, fetchNotifications, handleDismissNotification };
+};
 
 const Navbar = () => {
   const [userData, setUserData] = useState(null);
@@ -86,6 +126,13 @@ const Navbar = () => {
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
   const location = useLocation();
+  const { notifications, error, fetchNotifications, handleDismissNotification } = useNotifications();
+  const [anchorNotif, setAnchorNotif] = useState(null);
+  const notifOpen = Boolean(anchorNotif);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   const GetUserData = () => {
     AxiosInstance.get('users/me/')
@@ -111,7 +158,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login'); // Redireciona para a página de login após logout
+    navigate('/login');
   };
 
   const handleMenuOpen = (event) => {
@@ -152,10 +199,48 @@ const Navbar = () => {
             </Typography>
 
             <Tooltip title="Notificações">
-              <IconButton color="inherit" aria-label="notificações">
-                <NotificationsIcon />
+              <IconButton color="inherit" onClick={(e) => setAnchorNotif(e.currentTarget)}>
+                <Badge badgeContent={notifications.length} color="error">
+                  <NotificationsIcon />
+                </Badge>
               </IconButton>
             </Tooltip>
+
+            <Menu
+              anchorEl={anchorNotif}
+              open={notifOpen}
+              onClose={() => setAnchorNotif(null)}
+              PaperProps={{
+                sx: { width: 320, maxHeight: 400, overflowY: "auto" },
+              }}
+            >
+              {notifications.length === 0 ? (
+                <MenuItem>Sem notificações</MenuItem>
+              ) : (
+                notifications.map((notif, index) => (
+                  <Box key={notif.id}>
+                    <MenuItem sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      {notif.message.includes("aprovado") ? (
+                        <FlightTakeoffIcon color="success" sx={{ fontSize: 40 }} />
+                      ) : notif.message.includes("rejeitado") ? (
+                        <ErrorIcon color="error" sx={{ fontSize: 40 }} />
+                      ) : (
+                        <Avatar src={notif.image} sx={{ width: 40, height: 40, borderRadius: "50%" }} />
+                      )}
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="body2" sx={{ whiteSpace: "normal", wordWrap: "break-word" }}>
+                          {notif.message}
+                        </Typography>
+                      </Box>
+                      <IconButton size="small" onClick={() => handleDismissNotification(notif.id)}>
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    </MenuItem>
+                    {index < notifications.length - 1 && <Divider />}
+                  </Box>
+                ))
+              )}
+            </Menu>
 
             <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
               <IconButton
@@ -209,9 +294,8 @@ const Navbar = () => {
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
               >
-               
                 <MenuItem onClick={handleMenuClose}>
-              Editar
+                  Editar
                 </MenuItem>
                 <Divider />
                 <MenuItem onClick={handleLogout}>

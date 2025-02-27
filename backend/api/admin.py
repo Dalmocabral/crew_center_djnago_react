@@ -28,7 +28,9 @@ class PilotAwardAdmin(admin.ModelAdmin):
     filter_horizontal = ('participants',)  # Facilita a seleção de participantes existentes
 
     '''
-
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('recipient', 'message', 'image', 'created_at')
 
 admin.site.register(CustomUser)
 admin.site.register(PirepsFlight)

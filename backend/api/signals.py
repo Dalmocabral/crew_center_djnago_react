@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
-from .models import PirepsFlight, UserAward, FlightLeg
+from .models import PirepsFlight, UserAward, FlightLeg, Notification, Award, User
 
 @receiver(post_save, sender=PirepsFlight)
 def update_user_award_on_pirep_approval(sender, instance, **kwargs):
@@ -44,3 +44,33 @@ def update_user_award_on_pirep_approval(sender, instance, **kwargs):
 
             # Atualiza o progresso do UserAward
             user_award.check_award_completion(user_flights)
+
+@receiver(post_save, sender=PirepsFlight)
+def notify_pilot_on_status_change(sender, instance, **kwargs):
+    message = None  # Inicializa a variável para evitar erro
+
+    if instance.status == "Approved":
+        message = f"🥳🎉🛬 Seu voo {instance.flight_icao} {instance.flight_number} foi aprovado!"
+    elif instance.status == "Rejected":
+        message = f"❌ Seu voo {instance.flight_icao} {instance.flight_number} foi rejeitado."
+
+    if message:  # Apenas cria notificação se 'message' foi definido
+        if not Notification.objects.filter(recipient=instance.pilot, message=message).exists():
+            Notification.objects.create(
+                recipient=instance.pilot,
+                message=message
+            )
+
+@receiver(post_save, sender=Award)
+def notify_all_users_on_award_creation(sender, instance, **kwargs):
+    users = User.objects.all()  # Pega todos os usuários do sistema
+
+    for user in users:
+        message = f"🏆 Um novo World Tour foi criado: '{instance.name}'!"
+
+        # Evita criar notificações duplicadas do mesmo Award para o mesmo usuário
+        if not Notification.objects.filter(recipient=user, message=message).exists():
+            Notification.objects.create(
+                recipient=user,
+                message=message
+            )

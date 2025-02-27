@@ -37,7 +37,7 @@ const Awards = () => {
       </Typography>
       <Grid container spacing={3}>
         {awards.map((award) => (
-          <Grid item key={award.id} xs={12} sm={6} md={4}>
+          <Grid item key={award.id} xs={9} sm={6} md={4}>
             <Card>
               {/* Exibe a imagem do prêmio */}
               <CardMedia

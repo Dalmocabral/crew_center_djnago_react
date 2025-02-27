@@ -14,6 +14,7 @@ router.register(r'flight-legs', FlightLegViewSet)
 router.register(r'allowed-aircrafts', AllowedAircraftViewSet)
 router.register(r'allowed-icaos', AllowedIcaoViewSet)
 router.register(r'user-awards', UserAwardViewSet)
+router.register(r'notifications', NotificationViewSet, basename='notification')
 
 # Adicione a rota manualmente para o endpoint users/me/
 urlpatterns = [
