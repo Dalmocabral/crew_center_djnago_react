@@ -48,9 +48,9 @@ const drawerWidth = 240;
 const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/app/dashboard' },
   { text: 'Members', icon: <GroupIcon />, path: '/app/members' },
-  { text: 'Awards', icon: <AwardsIcon />, path: '/app/awards' },
+  { text: 'World Tour', icon: <AwardsIcon />, path: '/app/awards' },
   { text: 'My Flights', icon: <FlightsIcon />, path: '/app/my-flights' },
-  { text: 'My Awards', icon: <MyAwardsIcon />, path: '/app/my-awards' },
+  { text: 'My World Tour', icon: <MyAwardsIcon />, path: '/app/my-awards' },
   { text: 'MAP', icon: <MapIcon />, path: '/app/map' },
 ];
 
@@ -129,10 +129,39 @@ const Navbar = () => {
   const { notifications, error, fetchNotifications, handleDismissNotification } = useNotifications();
   const [anchorNotif, setAnchorNotif] = useState(null);
   const notifOpen = Boolean(anchorNotif);
+  const [currentTime, setCurrentTime] = useState({ utcTime: '', localTime: '' });
+
+  const getFormattedTime = () => {
+    const now = new Date();
+
+    // Formata o horário UTC
+    const utcTime = now.toLocaleTimeString('en-US', {
+      timeZone: 'UTC',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+
+    // Formata o horário local
+    const localTime = now.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+
+    return { utcTime, localTime };
+  };
 
   useEffect(() => {
-    fetchNotifications();
+    const interval = setInterval(() => {
+      setCurrentTime(getFormattedTime());
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, []);
+
 
   const GetUserData = () => {
     AxiosInstance.get('users/me/')
@@ -194,8 +223,13 @@ const Navbar = () => {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-              Crew Center Dashboard | Seja bem-vindo {userData?.first_name} {userData?.last_name}
+            <Typography
+              
+              noWrap
+              component="div"
+              sx={{ flexGrow: 1, fontFamily: '"Open Sans", sans-serif' }}
+            >
+              Infinite World Tour System | {currentTime.utcTime} UTC | {currentTime.localTime} Local
             </Typography>
 
             <Tooltip title="Notificações">
@@ -294,6 +328,18 @@ const Navbar = () => {
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
               >
+                <MenuItem onClick={handleMenuClose}>
+                  <Avatar src={userData?.gravatar_url} />
+                  <Box sx={{ ml: 2 }}>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                      {userData?.first_name} {userData?.last_name}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {userData?.email}
+                    </Typography>
+                  </Box>
+                </MenuItem>
+                <Divider />
                 <MenuItem onClick={handleMenuClose}>
                   Editar
                 </MenuItem>

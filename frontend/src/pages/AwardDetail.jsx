@@ -125,12 +125,12 @@ const AwardDetail = () => {
 
         {activeTab === 1 && (
           <Box id="leg-overview">
-            <Typography variant="h4" gutterBottom>
-              Leg Overview
-            </Typography>
-            <Typography paragraph>
-              Aqui você verá uma visão geral das pernas do tour.
-            </Typography>
+            <Typography variant="h4" gutterBottom align="center">
+  Leg Overview
+</Typography>
+<Typography paragraph align="center">
+  Here you will see an overview of the tour legs.
+</Typography>
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -164,7 +164,7 @@ const AwardDetail = () => {
                           }}
                           disabled={leg.pirep_status === 'Approved'}
                         >
-                          {leg.pirep_status === 'Approved' ? 'Aprovado' : 'Registrar Voo'}
+                          {leg.pirep_status === 'Approved' ? 'Approved' : 'File PIREP'}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -177,12 +177,12 @@ const AwardDetail = () => {
 
         {activeTab === 2 && (
           <Box id="tour-status">
-            <Typography variant="h4" gutterBottom>
-              Tour Status
-            </Typography>
-            <Typography paragraph>
-              Aqui você pode ver o status atual do tour.
-            </Typography>
+            <Typography variant="h4" gutterBottom align="center">
+  Tour Status
+</Typography>
+<Typography paragraph align="center">
+  Here you can see the current status of the tour.
+</Typography>
             <Box sx={{ display: 'flex', gap: 2 }}>
               {/* Mapa */}
               <Box sx={{ flex: 2, height: '500px' }}>

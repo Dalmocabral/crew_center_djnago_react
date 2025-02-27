@@ -71,14 +71,14 @@ const MyAwards = () => {
   return (
     <Paper elevation={3} style={{ padding: '20px', margin: '20px' }}>
       <Typography variant="h4" align="center" gutterBottom>
-        Meus Prêmios
+        My World Tour
       </Typography>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell><strong>Título</strong></TableCell>
-            <TableCell><strong>Início</strong></TableCell>
-            <TableCell><strong>Fim</strong></TableCell>
+            <TableCell><strong>Title</strong></TableCell>
+            <TableCell><strong>Start</strong></TableCell>
+            <TableCell><strong>End</strong></TableCell>
             <TableCell><strong>Status</strong></TableCell>
           </TableRow>
         </TableHead>
@@ -96,10 +96,10 @@ const MyAwards = () => {
                 </div>
               </TableCell>
               <TableCell>
-                {award.start_date ? new Date(award.start_date).toLocaleDateString() : 'Não iniciado'}
+                {award.start_date ? new Date(award.start_date).toLocaleDateString() : 'Not started'}
               </TableCell>
               <TableCell>
-                {award.end_date ? new Date(award.end_date).toLocaleDateString() : 'Em andamento'}
+                {award.end_date ? new Date(award.end_date).toLocaleDateString() : 'In progress'}
               </TableCell>
               <TableCell>
                 <div style={{ display: 'flex', alignItems: 'center' }}>

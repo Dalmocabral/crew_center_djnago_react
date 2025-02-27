@@ -29,11 +29,13 @@ const Awards = () => {
 
   return (
     <Container>
-      <Typography variant="h4" gutterBottom>
-        Awards
+      <Typography variant="h3" gutterBottom 
+      sx={{ textAlign: "center" }}
+      >
+       List World Tour
       </Typography>
-      <Typography paragraph>
-        Aqui você pode ver todos os prêmios disponíveis.
+      <Typography paragraph sx={{ textAlign: "center" }}>
+      Here you can see all the available World Tours.
       </Typography>
       <Grid container spacing={3}>
         {awards.map((award) => (
@@ -48,9 +50,14 @@ const Awards = () => {
               />
               <CardContent>
                 {/* Exibe a descrição do prêmio */}
-                <Typography variant="body2" color="text.secondary">
-                  {award.description}
+                <Typography
+                  variant="h6"
+                  color="text.secondary"
+                  sx={{ textAlign: "center" }} // Centraliza o texto
+                >
+                  {award.name}
                 </Typography>
+
                 {/* Botão para mais detalhes */}
                 <Button
                   variant="contained"
@@ -59,7 +66,7 @@ const Awards = () => {
                   sx={{ mt: 2 }}
                   onClick={() => handleDetailsClick(award)}
                 >
-                  Ver Detalhes
+                  View Details
                 </Button>
               </CardContent>
             </Card>
