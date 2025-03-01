@@ -17,26 +17,34 @@ import {
   List,
   ListItem,
   ListItemText,
+  Grid,
+  Card,
+  CardContent,
 } from '@mui/material';
 import AxiosInstance from '../components/AxiosInstance';
-import FlightMap from '../components/FlightMap'; // Importe o componente FlightMap
-import DistanceCalculator from '../components/DistanceCalculator'; // Importe o componente DistanceCalculator
+import FlightMap from '../components/FlightMap';
+import DistanceCalculator from '../components/DistanceCalculator';
 
 const AwardDetail = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [flightLegs, setFlightLegs] = useState([]);
   const [airportsData, setAirportsData] = useState({});
+  const [totalFlights, setTotalFlights] = useState(0);
+  const [totalHours, setTotalHours] = useState(0);
+  const [averageHours, setAverageHours] = useState(0);
+  const [averageFlights, setAverageFlights] = useState(0);
   const theme = useTheme();
   const location = useLocation();
-  const { award } = location.state || {};
+  const { award, userId } = location.state || {}; // Recebe o ID do usuário
   const navigate = useNavigate();
 
-  // Função para buscar as pernas do voo
-  const fetchFlightLegs = async () => {
+  // Função para buscar as pernas do voo do usuário específico
+  const fetchFlightLegs = async (userId) => {
     if (!award) return;
     try {
-      const response = await AxiosInstance.get(`/flight-legs/?award=${award.id}`);
+      const response = await AxiosInstance.get(`/flight-legs/?award=${award.id}&user=${userId}`);
       setFlightLegs(response.data);
+      calculateMetrics(response.data);
     } catch (error) {
       console.error('Erro ao buscar pernas do voo:', error);
     }
@@ -55,12 +63,25 @@ const AwardDetail = () => {
     }
   };
 
+  // Função para calcular as métricas
+  const calculateMetrics = (flights) => {
+    const totalFlightsCount = flights.length;
+    const totalHoursCount = flights.reduce((acc, flight) => acc + (flight.flight_duration || 0), 0);
+    const averageHoursCount = totalFlightsCount > 0 ? totalHoursCount / totalFlightsCount : 0;
+    const averageFlightsCount = totalFlightsCount > 0 ? totalFlightsCount / flights.length : 0;
+
+    setTotalFlights(totalFlightsCount);
+    setTotalHours(totalHoursCount);
+    setAverageHours(averageHoursCount);
+    setAverageFlights(averageFlightsCount);
+  };
+
   // Efeito para buscar as pernas do voo quando o prêmio é carregado
   useEffect(() => {
     if (activeTab === 1 || activeTab === 2) {
-      fetchFlightLegs();
+      fetchFlightLegs(userId); // Passa o ID do usuário
     }
-  }, [activeTab, award]);
+  }, [activeTab, award, userId]);
 
   // Efeito para buscar os dados dos aeroportos
   useEffect(() => {
@@ -75,21 +96,12 @@ const AwardDetail = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       {/* Navbar com abas */}
-      <Paper
-        sx={{
-          mb: 3,
-          backgroundColor: theme.palette.background.paper,
-        }}
-      >
+      <Paper sx={{ mb: 3, backgroundColor: theme.palette.background.paper }}>
         <Tabs
           value={activeTab}
           onChange={handleTabChange}
           centered
-          sx={{
-            '& .MuiTabs-indicator': {
-              backgroundColor: '#2196F3',
-            },
-          }}
+          sx={{ '& .MuiTabs-indicator': { backgroundColor: '#2196F3' } }}
         >
           <Tab label="Description" />
           <Tab label="Leg Overview" />
@@ -109,28 +121,58 @@ const AwardDetail = () => {
                 component="img"
                 src={award.link_image}
                 alt={award.name}
-                sx={{
-                  width: '100%',
-                  maxHeight: '300px',
-                  objectFit: 'cover',
-                  mb: 2,
-                }}
+                sx={{ width: '100%', maxHeight: '300px', objectFit: 'cover', mb: 2 }}
               />
             )}
-            <Typography paragraph>
-              {award?.description || 'No description available.'}
-            </Typography>
+            <Typography paragraph>{award?.description || 'No description available.'}</Typography>
           </Box>
         )}
 
         {activeTab === 1 && (
           <Box id="leg-overview">
             <Typography variant="h4" gutterBottom align="center">
-  Leg Overview
-</Typography>
-<Typography paragraph align="center">
-  Here you will see an overview of the tour legs.
-</Typography>
+              Leg Overview
+            </Typography>
+            <Typography paragraph align="center">
+              Here you will see an overview of the tour legs.
+            </Typography>
+
+            {/* Cards com as métricas */}
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={3}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6">Total de Voos</Typography>
+                    <Typography variant="h5">{totalFlights}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6">Total de Horas</Typography>
+                    <Typography variant="h5">{totalHours.toFixed(2)}h</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6">Média de Horas</Typography>
+                    <Typography variant="h5">{averageHours.toFixed(2)}h</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6">Média de Voos</Typography>
+                    <Typography variant="h5">{averageFlights.toFixed(2)}</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -178,11 +220,11 @@ const AwardDetail = () => {
         {activeTab === 2 && (
           <Box id="tour-status">
             <Typography variant="h4" gutterBottom align="center">
-  Tour Status
-</Typography>
-<Typography paragraph align="center">
-  Here you can see the current status of the tour.
-</Typography>
+              Tour Status
+            </Typography>
+            <Typography paragraph align="center">
+              Here you can see the current status of the tour.
+            </Typography>
             <Box sx={{ display: 'flex', gap: 2 }}>
               {/* Mapa */}
               <Box sx={{ flex: 2, height: '500px' }}>

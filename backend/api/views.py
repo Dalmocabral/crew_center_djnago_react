@@ -8,6 +8,8 @@ from django.contrib.auth import get_user_model, authenticate
 from knox.models import AuthToken
 from django.db.models import Sum, Count
 from rest_framework.decorators import action
+from rest_framework.viewsets import ViewSet
+from datetime import timedelta
 
 User = get_user_model()
 
@@ -51,14 +53,12 @@ class LoginViewset(viewsets.ViewSet):
         
 class UserViewset(viewsets.ViewSet):
     permission_classes = [permissions.AllowAny]  # Permite acesso sem autenticação
-    serializer_class = RegisterSerializer
+    serializer_class = UserSerializer  # Use o UserSerializer aqui
     queryset = User.objects.all()
 
     def list(self, request):
-
         queryset = User.objects.all()
-        serializer = self.serializer_class(queryset, many=True) 
-
+        serializer = self.serializer_class(queryset, many=True)  # Serializa os dados dos usuários
         return Response(serializer.data)
     
 class PirepsFlightViewset(viewsets.ModelViewSet):
@@ -207,3 +207,72 @@ class NotificationViewSet(viewsets.ModelViewSet):
         notification.is_read = True
         notification.save()
         return Response({"status": "Notificação marcada como lida"}, status=status.HTTP_200_OK)
+    
+class UserDetailViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]  # Apenas usuários autenticados podem acessar
+
+    def retrieve(self, request, pk=None):
+        try:
+            user = CustomUser.objects.get(id=pk)  # Busca o usuário pelo ID
+            serializer = UserSerializer(user)  # Serializa os dados do usuário
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class UserMetricsViewSet(ViewSet):
+    def retrieve(self, request, pk=None):
+        try:
+            # Filtra os PIREPs do usuário com status "Approved"
+            approved_pireps = PirepsFlight.objects.filter(pilot_id=pk, status="Approved")
+
+            # Filtra os PIREPs aprovados nos últimos 30 dias
+            thirty_days_ago = timezone.now() - timedelta(days=30)
+            approved_pireps_last_30_days = approved_pireps.filter(registration_date__gte=thirty_days_ago)
+
+            # Calcula as métricas
+            total_flights = approved_pireps.count()
+
+            # Soma os tempos de voo em segundos
+            total_flight_time_seconds = sum(
+                pirep.flight_duration.total_seconds() for pirep in approved_pireps if pirep.flight_duration
+            )
+            total_flight_time_hours = total_flight_time_seconds / 3600  # Converte para horas
+
+            # Converte horas decimais para HH:MM
+            def decimal_to_hh_mm(decimal_hours):
+                hours = int(decimal_hours)
+                minutes = int((decimal_hours - hours) * 60)
+                return f"{hours}:{minutes:02d}"
+
+            total_flight_time_hh_mm = decimal_to_hh_mm(total_flight_time_hours)
+
+            total_flights_last_30_days = approved_pireps_last_30_days.count()
+
+            # Soma os tempos de voo dos últimos 30 dias em segundos
+            total_flight_time_last_30_days_seconds = sum(
+                pirep.flight_duration.total_seconds() for pirep in approved_pireps_last_30_days if pirep.flight_duration
+            )
+            total_flight_time_last_30_days_hours = total_flight_time_last_30_days_seconds / 3600  # Converte para horas
+
+            # Converte horas decimais para HH:MM
+            total_flight_time_last_30_days_hh_mm = decimal_to_hh_mm(total_flight_time_last_30_days_hours)
+
+            # Calcula as médias
+            average_flights_per_day = total_flights_last_30_days / 30 if total_flights_last_30_days > 0 else 0
+            average_flight_time_per_day = total_flight_time_last_30_days_hours / 30 if total_flight_time_last_30_days_hours > 0 else 0
+
+            # Retorna as métricas
+            metrics = {
+                "total_flights": total_flights,
+                "total_flight_time": total_flight_time_hh_mm,  # Em formato HH:MM
+                "total_flights_last_30_days": total_flights_last_30_days,
+                "total_flight_time_last_30_days": total_flight_time_last_30_days_hh_mm,  # Em formato HH:MM
+                "average_flights_per_day": average_flights_per_day,
+                "average_flight_time_per_day": average_flight_time_per_day,
+            }
+
+            return Response(metrics, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

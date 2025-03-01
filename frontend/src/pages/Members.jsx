@@ -39,7 +39,7 @@ const Members = () => {
             <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
               {/* Transforma o Card em um link clicável */}
               <Link 
-                to={`/members/${item.id}`} // Redireciona para a página de detalhes do membro
+                to={`/app/userdetail/${item.id}`} // Redireciona para a página de detalhes do membro
                 style={{ textDecoration: 'none' }} // Remove o sublinhado do link
               >
                 <Card 
@@ -80,8 +80,8 @@ const Members = () => {
                     {/* Exibe a bandeira */}
                     <Box display="flex" alignItems="center" justifyContent="center" mt={1}>
                       <img
-                        src={`https://flagcdn.com/w320/${item.country.toLowerCase()}.png`}
-                        alt={item.country}
+                        src={`https://flagcdn.com/w320/${item.country ? item.country.toLowerCase() : ''}.png`}
+                        alt={item.country || 'País não informado'}
                         style={{ width: '24px', height: 'auto' }} // Ajusta o tamanho da bandeira
                       />
                     </Box>

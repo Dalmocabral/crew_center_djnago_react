@@ -83,7 +83,7 @@ class UserAwardSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name']  # Campos que você quer retornar
+        fields = ['id', 'email', 'first_name', 'last_name', 'country', 'usernameIFC']  # Campos que você quer retornar
 
 
 class NotificationSerializer(serializers.ModelSerializer):

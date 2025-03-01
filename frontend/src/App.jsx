@@ -15,6 +15,7 @@ import ProtectedRoutes from './components/ProtectedRoutes';
 import EditPirep from './pages/EditPirep';
 import Briefing from './pages/briefing';
 import AwardDetail from './pages/AwardDetail';
+import UserDetail from './pages/UserDetail';
 function App() {
   return (
     <Routes>
@@ -35,6 +36,8 @@ function App() {
           <Route path="edit-pirep/:id" element={<EditPirep />} />
           <Route path="briefing/:id" element={<Briefing />} />
           <Route path="awards/awardDetail/:id" element={<AwardDetail />} />
+          <Route path="userdetail/:id" element={<UserDetail />} />
+          
           
         </Route>
       </Route>
