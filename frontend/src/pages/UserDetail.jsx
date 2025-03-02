@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AxiosInstance from '../components/AxiosInstance';
-import { Box, Typography, Card, CardContent, Grid, CircularProgress, CardMedia } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Grid,
+  CircularProgress as Spinner,
+  CardMedia,
+  Pagination,
+  LinearProgress,
+} from '@mui/material';
 import Gravatar from '../components/Gravatar';
 import FlightIcon from '@mui/icons-material/Flight';
 import PublicIcon from '@mui/icons-material/Public';
@@ -14,16 +24,18 @@ const UserDetail = () => {
   const [loading, setLoading] = useState(true);
   const [userAwards, setUserAwards] = useState([]);
   const [awards, setAwards] = useState([]);
+  const [page, setPage] = useState(1); // Estado para paginação
+  const itemsPerPage = 6; // Número de itens por página
 
-   // Buscar prêmios e prêmios do usuário
-   useEffect(() => {
+  // Buscar prêmios e prêmios do usuário
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const [awardsResponse, userAwardsResponse] = await Promise.all([
           AxiosInstance.get('/awards/'),
-          AxiosInstance.get(`/user-awards/?user=${id}`)
+          AxiosInstance.get(`/user-awards/?user=${id}`),
         ]);
-        
+
         setAwards(awardsResponse.data);
         setUserAwards(userAwardsResponse.data);
       } catch (error) {
@@ -36,18 +48,20 @@ const UserDetail = () => {
     fetchData();
   }, [id]);
 
-    // Combinar os dados de prêmios com os dados do usuário
-    const combinedAwards = userAwards.map((userAward) => {
-      const awardData = awards.find((award) => award.id === userAward.award);
-      return {
-        id: userAward.id,
-        name: awardData ? awardData.name : "Desconhecido",
-        image: awardData ? awardData.link_image : "",
-        progress: userAward.progress,
-        end_date: userAward.end_date
-      };
-    });
-  
+  // Combinar os dados de prêmios com os dados do usuário
+  const combinedAwards = userAwards.map((userAward) => {
+    const awardData = awards.find((award) => award.id === userAward.award);
+    return {
+      id: userAward.id,
+      name: awardData ? awardData.name : 'Desconhecido',
+      image: awardData ? awardData.link_image : '',
+      progress: userAward.progress,
+      end_date: userAward.end_date,
+    };
+  });
+
+  // Lógica de paginação
+  const paginatedAwards = combinedAwards.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   // Busca os dados do usuário
   useEffect(() => {
@@ -105,7 +119,7 @@ const UserDetail = () => {
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <CircularProgress />
+        <Spinner />
       </Box>
     );
   }
@@ -232,41 +246,57 @@ const UserDetail = () => {
       </Grid>
 
       {/* Seção de Prêmios */}
-      <Box sx={{ p: 4 }}>
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-        Prêmios Conquistados
-      </Typography>
-      <Grid container spacing={2}>
-        {combinedAwards.length > 0 ? (
-          combinedAwards.map((award) => (
-            <Grid item xs={12} sm={6} md={4} key={award.id}>
-              <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
-                <CardMedia
-                  component="img"
-                  height="140"
-                  image={award.image}
-                  alt={award.name}
-                  sx={{ borderRadius: 2 }}
-                />
-                <CardContent>
-                  <Typography variant="h6" sx={{ mt: 2, fontWeight: 'bold' }}>
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'left' }}>
+          Prêmios Conquistados
+        </Typography>
+        <Grid container spacing={2} justifyContent="center">
+          {paginatedAwards.length > 0 ? (
+            paginatedAwards.map((award) => (
+              <Grid item xs={6} sm={4} md={3} key={award.id} sx={{ display: 'flex', justifyContent: 'center' }}>
+                <Box sx={{ textAlign: 'center' }}>
+                  {/* Círculo com a imagem do prêmio */}
+                  <Card sx={{ boxShadow: 3, borderRadius: '50%', width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <CardMedia
+                      component="img"
+                      image={award.image}
+                      alt={award.name}
+                      sx={{ width: '80px', height: '80px', borderRadius: '50%' }}
+                    />
+                  </Card>
+                  {/* Nome do prêmio */}
+                  <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
                     {award.name}
                   </Typography>
-                  <Typography variant="body2">
-                    Progresso: {award.progress}%
-                  </Typography>
-                  
-                </CardContent>
-              </Card>
-            </Grid>
-          ))
-        ) : (
-          <Typography variant="body2" color="text.secondary">
-            Nenhum prêmio conquistado ainda.
-          </Typography>
+                  {/* Barra de progresso */}
+                  <Box sx={{ width: '100%', mt: 1 }}>
+                    <LinearProgress variant="determinate" value={award.progress} />
+                    <Typography variant="caption" sx={{ mt: 1 }}>
+                      {award.progress}% concluído
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+            ))
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              Nenhum prêmio conquistado ainda.
+            </Typography>
+          )}
+        </Grid>
+        {/* Paginação */}
+        {combinedAwards.length > itemsPerPage && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <Pagination
+              count={Math.ceil(combinedAwards.length / itemsPerPage)}
+              page={page}
+              onChange={(event, value) => setPage(value)}
+              color="primary"
+            />
+          </Box>
         )}
-      </Grid>
-    </Box>    </Box>
+      </Box>
+    </Box>
   );
 };
 
