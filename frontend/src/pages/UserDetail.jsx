@@ -247,7 +247,7 @@ const UserDetail = () => {
 
       {/* Seção de Prêmios */}
       <Box sx={{ mt: 4 }}>
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'left' }}>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'center' }}>
           Prêmios Conquistados
         </Typography>
         <Grid container spacing={2} justifyContent="center">

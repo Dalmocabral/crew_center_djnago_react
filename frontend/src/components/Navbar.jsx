@@ -42,6 +42,7 @@ import { lightTheme, darkTheme } from '../theme';
 import { logout } from '../auth';
 import Gravatar from '../components/Gravatar';
 import AxiosInstance from '../components/AxiosInstance';
+import PublicIcon from '@mui/icons-material/Public';
 
 const drawerWidth = 240;
 
@@ -50,7 +51,7 @@ const menuItems = [
   { text: 'Members', icon: <GroupIcon />, path: '/app/members' },
   { text: 'World Tour', icon: <AwardsIcon />, path: '/app/awards' },
   { text: 'My Flights', icon: <FlightsIcon />, path: '/app/my-flights' },
-  { text: 'My World Tour', icon: <MyAwardsIcon />, path: '/app/my-awards' },
+  { text: 'My World Tour', icon: <PublicIcon />, path: '/app/my-awards' },
   { text: 'MAP', icon: <MapIcon />, path: '/app/map' },
 ];
 

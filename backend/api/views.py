@@ -282,3 +282,27 @@ class UserMetricsViewSet(ViewSet):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class UserApprovedFlightsViewSet(ViewSet):
+    def retrieve(self, request, pk=None):
+        try:
+            # Filtra os voos aprovados do usuário
+            approved_flights = PirepsFlight.objects.filter(pilot_id=pk, status="Approved")
+            flights_data = []
+
+            for flight in approved_flights:
+                flights_data.append({
+                    "flight": flight.flight_number,
+                    "dep": flight.departure_airport,
+                    "arr": flight.arrival_airport,
+                    "date": flight.registration_date,
+                    "network": flight.network,
+                    "duration": flight.flight_duration,
+                    "aircraft": flight.aircraft,
+                    "status": flight.status,
+                })
+
+            return Response(flights_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
