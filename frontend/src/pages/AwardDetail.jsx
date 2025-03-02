@@ -137,41 +137,7 @@ const AwardDetail = () => {
               Here you will see an overview of the tour legs.
             </Typography>
 
-            {/* Cards com as métricas */}
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid item xs={12} md={3}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6">Total de Voos</Typography>
-                    <Typography variant="h5">{totalFlights}</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12} md={3}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6">Total de Horas</Typography>
-                    <Typography variant="h5">{totalHours.toFixed(2)}h</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12} md={3}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6">Média de Horas</Typography>
-                    <Typography variant="h5">{averageHours.toFixed(2)}h</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12} md={3}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6">Média de Voos</Typography>
-                    <Typography variant="h5">{averageFlights.toFixed(2)}</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
+            
 
             <TableContainer component={Paper}>
               <Table>

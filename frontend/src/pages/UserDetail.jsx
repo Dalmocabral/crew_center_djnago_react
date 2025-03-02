@@ -11,10 +11,22 @@ import {
   CardMedia,
   Pagination,
   LinearProgress,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
+  Button,
 } from '@mui/material';
 import Gravatar from '../components/Gravatar';
 import FlightIcon from '@mui/icons-material/Flight';
 import PublicIcon from '@mui/icons-material/Public';
+import PreviewIcon from '@mui/icons-material/Preview';
+import { Tooltip, IconButton, Fade } from "@mui/material";
+import { Badge } from '@mui/material';
+import { Chip } from "@mui/material";
 
 const UserDetail = () => {
   const { id } = useParams(); // Pega o ID do usuário da URL
@@ -24,8 +36,12 @@ const UserDetail = () => {
   const [loading, setLoading] = useState(true);
   const [userAwards, setUserAwards] = useState([]);
   const [awards, setAwards] = useState([]);
-  const [page, setPage] = useState(1); // Estado para paginação
-  const itemsPerPage = 6; // Número de itens por página
+  const [approvedFlights, setApprovedFlights] = useState([]); // Voos aprovados
+  const [error, setError] = useState(null); // Estado para erros
+  const [awardsPage, setAwardsPage] = useState(1); // Paginação de prêmios
+  const [flightsPage, setFlightsPage] = useState(1); // Paginação de voos
+  const itemsPerPage = 6; // Número de itens por página (prêmios)
+  const rowsPerPage = 5; // Número de linhas por página (voos)
 
   // Buscar prêmios e prêmios do usuário
   useEffect(() => {
@@ -40,6 +56,7 @@ const UserDetail = () => {
         setUserAwards(userAwardsResponse.data);
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
+        setError('Erro ao carregar prêmios.');
       } finally {
         setLoading(false);
       }
@@ -60,8 +77,8 @@ const UserDetail = () => {
     };
   });
 
-  // Lógica de paginação
-  const paginatedAwards = combinedAwards.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  // Lógica de paginação para prêmios
+  const paginatedAwards = combinedAwards.slice((awardsPage - 1) * itemsPerPage, awardsPage * itemsPerPage);
 
   // Busca os dados do usuário
   useEffect(() => {
@@ -70,9 +87,11 @@ const UserDetail = () => {
         setUser(res.data);
         fetchInfiniteFlightData(res.data.usernameIFC); // Busca dados do Infinite Flight
         fetchUserMetrics(res.data.id); // Busca as métricas do usuário
+        fetchApprovedFlights(res.data.id); // Busca os voos aprovados do usuário
       })
       .catch((error) => {
         console.error('Erro ao buscar os dados do usuário:', error);
+        setError('Erro ao carregar dados do usuário.');
         setLoading(false);
       });
   }, [id]);
@@ -101,6 +120,7 @@ const UserDetail = () => {
       }
     } catch (error) {
       console.error('Erro ao buscar dados do Infinite Flight:', error);
+      setError('Erro ao carregar dados do Infinite Flight.');
     } finally {
       setLoading(false);
     }
@@ -113,8 +133,30 @@ const UserDetail = () => {
       setUserMetrics(response.data); // Armazena as métricas do usuário
     } catch (error) {
       console.error('Erro ao buscar métricas do usuário:', error);
+      setError('Erro ao carregar métricas do usuário.');
     }
   };
+
+  // Busca os voos aprovados do usuário
+  const fetchApprovedFlights = async (userId) => {
+    try {
+      const response = await AxiosInstance.get(`user-approved-flights/${userId}/`);
+      setApprovedFlights(response.data); // Armazena os voos aprovados do usuário
+    } catch (error) {
+      console.error('Erro ao buscar voos aprovados:', error);
+      setError('Erro ao carregar voos aprovados.');
+    }
+  };
+
+  // Ordenar os voos aprovados pela data (do mais recente para o mais antigo)
+  const sortedFlights = approvedFlights.sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return dateB - dateA; // Ordena do mais recente para o mais antigo
+  });
+
+  // Aplicar a paginação aos voos ordenados
+  const paginatedFlights = sortedFlights.slice((flightsPage - 1) * rowsPerPage, flightsPage * rowsPerPage);
 
   if (loading) {
     return (
@@ -127,6 +169,14 @@ const UserDetail = () => {
   if (!user) {
     return <Typography>Usuário não encontrado.</Typography>;
   }
+
+  // Format duration from seconds to HH:MM
+  const formatDuration = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  };
+
 
   return (
     <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -145,7 +195,6 @@ const UserDetail = () => {
         {/* Card do Sistema World Tour */}
         <Grid item xs={12} md={6}>
           <Card sx={{ boxShadow: 3, borderRadius: 2, position: 'relative', overflow: 'hidden', minHeight: '300px' }}>
-            {/* Ícone de fundo */}
             <PublicIcon
               sx={{
                 position: 'absolute',
@@ -167,7 +216,7 @@ const UserDetail = () => {
                   País: <img
                     src={`https://flagcdn.com/w320/${user.country ? user.country.toLowerCase() : ''}.png`}
                     alt={user.country || 'País não informado'}
-                    style={{ width: '24px', height: 'auto' }} // Ajusta o tamanho da bandeira
+                    style={{ width: '24px', height: 'auto' }}
                   />
                 </Typography>
                 {userMetrics ? (
@@ -204,7 +253,6 @@ const UserDetail = () => {
         {/* Card do Infinite Flight */}
         <Grid item xs={12} md={6}>
           <Card sx={{ boxShadow: 3, borderRadius: 2, position: 'relative', overflow: 'hidden', minHeight: '300px' }}>
-            {/* Ícone de fundo */}
             <FlightIcon
               sx={{
                 position: 'absolute',
@@ -255,7 +303,6 @@ const UserDetail = () => {
             paginatedAwards.map((award) => (
               <Grid item xs={6} sm={4} md={3} key={award.id} sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Box sx={{ textAlign: 'center' }}>
-                  {/* Círculo com a imagem do prêmio */}
                   <Card sx={{ boxShadow: 3, borderRadius: '50%', width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <CardMedia
                       component="img"
@@ -264,11 +311,9 @@ const UserDetail = () => {
                       sx={{ width: '80px', height: '80px', borderRadius: '50%' }}
                     />
                   </Card>
-                  {/* Nome do prêmio */}
                   <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
                     {award.name}
                   </Typography>
-                  {/* Barra de progresso */}
                   <Box sx={{ width: '100%', mt: 1 }}>
                     <LinearProgress variant="determinate" value={award.progress} />
                     <Typography variant="caption" sx={{ mt: 1 }}>
@@ -284,16 +329,100 @@ const UserDetail = () => {
             </Typography>
           )}
         </Grid>
-        {/* Paginação */}
         {combinedAwards.length > itemsPerPage && (
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
             <Pagination
               count={Math.ceil(combinedAwards.length / itemsPerPage)}
-              page={page}
-              onChange={(event, value) => setPage(value)}
+              page={awardsPage}
+              onChange={(event, value) => setAwardsPage(value)}
               color="primary"
             />
           </Box>
+        )}
+      </Box>
+
+      {/* Tabela de voos aprovados */}
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Voos Aprovados
+        </Typography>
+        {error && (
+          <Typography variant="body2" color="error">
+            {error}
+          </Typography>
+        )}
+        {approvedFlights.length > 0 ? (
+
+          <>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Flight</TableCell>
+                    <TableCell>Dep</TableCell>
+                    <TableCell>Arr</TableCell>
+                    <TableCell>Date</TableCell>
+                    <TableCell>Network</TableCell>
+                    <TableCell>Duration</TableCell>
+                    <TableCell>Aircraft</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedFlights.map((flight) => (
+
+                    <TableRow key={flight.id}>
+                      <TableCell>{flight.flight}</TableCell>
+                      <TableCell>{flight.dep}</TableCell>
+                      <TableCell>{flight.arr}</TableCell>
+                      <TableCell>{new Date(flight.date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Badge
+                          color={flight.network === 'Expert' ? 'success' : 'primary'}
+                          badgeContent={flight.network}
+                        />
+                      </TableCell>
+                      <TableCell>{formatDuration(flight.duration)}</TableCell>
+                      <TableCell>{flight.aircraft}</TableCell>
+                      <TableCell>
+  <Chip
+    label={flight.status}
+    color={
+      flight.status === "Pending"
+        ? "warning"
+        : flight.status === "Approved"
+        ? "success"
+        : flight.status === "Rejected"
+        ? "error"
+        : "default"
+    }
+    variant="outlined" // Ou remova para um fundo sólido
+  />
+</TableCell>
+                      <TableCell>
+                        <IconButton component="a" href={`/app/briefing/${flight.id}`}>
+                          <PreviewIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <Pagination
+                count={Math.ceil(approvedFlights.length / rowsPerPage)}
+                page={flightsPage}
+                onChange={(event, value) => setFlightsPage(value)}
+                color="primary"
+              />
+            </Box>
+          </>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            Nenhum voo aprovado encontrado.
+          </Typography>
         )}
       </Box>
     </Box>
