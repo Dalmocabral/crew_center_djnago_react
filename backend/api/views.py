@@ -178,13 +178,20 @@ class AllowedIcaoViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AllowAny]
 
 class UserAwardViewSet(viewsets.ModelViewSet):
+    queryset = UserAward.objects.all()
     serializer_class = UserAwardSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    queryset = UserAward.objects.none()  # Define um queryset padrão
 
     def get_queryset(self):
-        # Retorna apenas os UserAward do usuário logado, incluindo os dados do Award
-        return UserAward.objects.filter(user=self.request.user).select_related('award')
+        user_id = self.request.query_params.get("user")
+
+        if user_id:
+            return self.queryset.filter(user__id=user_id)
+        
+        # Se nenhum usuário foi passado, retorna os prêmios do usuário autenticado
+        if self.request.user.is_authenticated:
+            return self.queryset.filter(user=self.request.user)
+
+        return self.queryset.none()  # Se não houver usuário autenticado, retorna vazio
 
 class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]  # Apenas usuários autenticados podem acessar
@@ -219,7 +226,6 @@ class UserDetailViewSet(viewsets.ViewSet):
         except CustomUser.DoesNotExist:
             return Response({"error": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
         
-
 class UserMetricsViewSet(ViewSet):
     def retrieve(self, request, pk=None):
         try:
