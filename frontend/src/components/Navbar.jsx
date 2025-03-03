@@ -94,6 +94,7 @@ const useNotifications = () => {
   const fetchNotifications = () => {
     AxiosInstance.get("notifications/")
       .then((res) => {
+        console.log(res.data);
         setNotifications(res.data);
         setError(null);
       })
@@ -106,6 +107,7 @@ const useNotifications = () => {
   const handleDismissNotification = (id) => {
     AxiosInstance.post(`notifications/${id}/mark_as_read/`)
       .then(() => {
+
         setNotifications((prev) => prev.filter((notif) => notif.id !== id));
       })
       .catch((error) => {
@@ -225,7 +227,7 @@ const Navbar = () => {
               <MenuIcon />
             </IconButton>
             <Typography
-              
+
               noWrap
               component="div"
               sx={{ flexGrow: 1, fontFamily: '"Open Sans", sans-serif' }}
@@ -252,31 +254,33 @@ const Navbar = () => {
               {notifications.length === 0 ? (
                 <MenuItem>Sem notificações</MenuItem>
               ) : (
-                notifications.map((notif, index) => (
-                  <Box key={notif.id}>
-                    <MenuItem sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      {notif.message.includes("aprovado") ? (
-                        <FlightTakeoffIcon color="success" sx={{ fontSize: 40 }} />
-                      ) : notif.message.includes("rejeitado") ? (
-                        <ErrorIcon color="error" sx={{ fontSize: 40 }} />
-                      ) : (
-                        <Avatar src={notif.image} sx={{ width: 40, height: 40, borderRadius: "50%" }} />
-                      )}
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2" sx={{ whiteSpace: "normal", wordWrap: "break-word" }}>
-                          {notif.message}
-                        </Typography>
-                      </Box>
-                      <IconButton size="small" onClick={() => handleDismissNotification(notif.id)}>
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
-                    </MenuItem>
-                    {index < notifications.length - 1 && <Divider />}
-                  </Box>
-                ))
+                notifications.map((notif, index) => {
+                  console.log("Notificação:", notif); // Depuração
+                  return (
+                    <Box key={notif.id}>
+                      <MenuItem sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        {notif.message.includes("aprovado") ? (
+                          <FlightTakeoffIcon color="success" sx={{ fontSize: 40 }} />
+                        ) : notif.message.includes("rejeitado") ? (
+                          <ErrorIcon color="error" sx={{ fontSize: 40 }} />
+                        ) : (
+                          <Avatar src={notif.image} sx={{ width: 40, height: 40, borderRadius: "50%" }} />
+                        )}
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="body2" sx={{ whiteSpace: "normal", wordWrap: "break-word" }}>
+                            {notif.message}
+                          </Typography>
+                        </Box>
+                        <IconButton size="small" onClick={() => handleDismissNotification(notif.id)}>
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </MenuItem>
+                      {index < notifications.length - 1 && <Divider />}
+                    </Box>
+                  );
+                })
               )}
             </Menu>
-
             <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
               <IconButton
                 onClick={handleMenuOpen}
@@ -341,7 +345,7 @@ const Navbar = () => {
                   </Box>
                 </MenuItem>
                 <Divider />
-                <MenuItem onClick={handleMenuClose}>
+                <MenuItem onClick={() => navigate('/app/profile/edit')}>
                   Editar
                 </MenuItem>
                 <Divider />

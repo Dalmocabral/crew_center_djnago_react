@@ -16,6 +16,7 @@ import EditPirep from './pages/EditPirep';
 import Briefing from './pages/briefing';
 import AwardDetail from './pages/AwardDetail';
 import UserDetail from './pages/UserDetail';
+import ProfileEdit from './pages/ProfileEdit';
 function App() {
   return (
     <Routes>
@@ -37,7 +38,7 @@ function App() {
           <Route path="briefing/:id" element={<Briefing />} />
           <Route path="awards/awardDetail/:id" element={<AwardDetail />} />
           <Route path="userdetail/:id" element={<UserDetail />} />
-          
+          <Route path="profile/edit" element={<ProfileEdit />} />    
           
         </Route>
       </Route>

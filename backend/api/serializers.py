@@ -25,7 +25,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         return user
 
-
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
@@ -46,14 +45,12 @@ class LoginSerializer(serializers.Serializer):
         # Retorne os dados validados
         return data
     
-
 class PirepsFlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = PirepsFlight
         fields = ('id', 'flight_icao', 'flight_number', 'departure_airport', 'arrival_airport', 
                   'aircraft', 'flight_duration', 'network', 'registration_date', 'status', 'observation')
         read_only_fields = ('pilot',)  # Impede alteração do piloto
-
 
 class AwardsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -85,8 +82,28 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'email', 'first_name', 'last_name', 'country', 'usernameIFC']  # Campos que você quer retornar
 
-
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = '__all__'
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'usernameIFC', 'country', 'first_name', 'last_name']
+        extra_kwargs = {
+            'email': {'required': False},
+            'usernameIFC': {'required': False},
+            'country': {'required': False},
+            'first_name': {'required': False},  # Add first_name
+            'last_name': {'required': False},   # Add last_name
+        }
+
+    def update(self, instance, validated_data):
+        instance.first_name = validated_data.get('first_name', instance.first_name)  # Update first_name
+        instance.last_name = validated_data.get('last_name', instance.last_name)      # Update last_name
+        instance.email = validated_data.get('email', instance.email)
+        instance.usernameIFC = validated_data.get('usernameIFC', instance.usernameIFC)
+        instance.country = validated_data.get('country', instance.country)
+        instance.save()
+        return instance

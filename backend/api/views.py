@@ -283,7 +283,6 @@ class UserMetricsViewSet(ViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-
 class UserApprovedFlightsViewSet(ViewSet):
     def retrieve(self, request, pk=None):
         try:
@@ -307,3 +306,19 @@ class UserApprovedFlightsViewSet(ViewSet):
             return Response(flights_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class ProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user  # Obtém o usuário logado
+        serializer = ProfileUpdateSerializer(user)
+        return Response(serializer.data)
+
+    def put(self, request):
+        user = request.user  # Obtém o usuário logado
+        serializer = ProfileUpdateSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

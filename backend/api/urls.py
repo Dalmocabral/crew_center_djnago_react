@@ -19,9 +19,11 @@ router.register(r'users', UserDetailViewSet, basename='user-detail')  # Registra
 router.register(r'user-metrics', UserMetricsViewSet, basename='user-metrics')
 router.register(r'user-approved-flights', UserApprovedFlightsViewSet, basename='user-approved-flights')
 
+
 # Adicione a rota manualmente para o endpoint users/me/
 urlpatterns = [
     path('users/me/', CurrentUserView.as_view(), name='current-user'),
+    path('profile/update/', ProfileUpdateView.as_view(), name='profile-update'),
 ]
 
 # Inclua as rotas do router
