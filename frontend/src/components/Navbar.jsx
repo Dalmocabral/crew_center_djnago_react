@@ -18,7 +18,6 @@ import {
   MenuItem,
   Avatar,
   Tooltip,
-  Badge,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -32,17 +31,14 @@ import {
   Logout as LogoutIcon,
   Group as GroupIcon,
   Assignment as PirepsIcon,
-  Notifications as NotificationsIcon,
-  Close as CloseIcon,
-  FlightTakeoff as FlightTakeoffIcon,
-  Error as ErrorIcon,
+  Public as PublicIcon,
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { lightTheme, darkTheme } from '../theme';
 import { logout } from '../auth';
 import Gravatar from '../components/Gravatar';
 import AxiosInstance from '../components/AxiosInstance';
-import PublicIcon from '@mui/icons-material/Public';
+import Notifications from './Notifications'; // Importando o componente Notifications
 
 const drawerWidth = 240;
 
@@ -87,37 +83,6 @@ const DrawerContent = ({ darkMode, handleThemeChange, navigate, location, handle
   </div>
 );
 
-const useNotifications = () => {
-  const [notifications, setNotifications] = useState([]);
-  const [error, setError] = useState(null);
-
-  const fetchNotifications = () => {
-    AxiosInstance.get("notifications/")
-      .then((res) => {
-        console.log(res.data);
-        setNotifications(res.data);
-        setError(null);
-      })
-      .catch((error) => {
-        console.error("Erro ao buscar notificações:", error);
-        setError("Erro ao carregar notificações. Tente novamente mais tarde.");
-      });
-  };
-
-  const handleDismissNotification = (id) => {
-    AxiosInstance.post(`notifications/${id}/mark_as_read/`)
-      .then(() => {
-
-        setNotifications((prev) => prev.filter((notif) => notif.id !== id));
-      })
-      .catch((error) => {
-        console.error("Erro ao marcar notificação como lida:", error);
-      });
-  };
-
-  return { notifications, error, fetchNotifications, handleDismissNotification };
-};
-
 const Navbar = () => {
   const [userData, setUserData] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -129,9 +94,6 @@ const Navbar = () => {
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
   const location = useLocation();
-  const { notifications, error, fetchNotifications, handleDismissNotification } = useNotifications();
-  const [anchorNotif, setAnchorNotif] = useState(null);
-  const notifOpen = Boolean(anchorNotif);
   const [currentTime, setCurrentTime] = useState({ utcTime: '', localTime: '' });
 
   const getFormattedTime = () => {
@@ -164,7 +126,6 @@ const Navbar = () => {
 
     return () => clearInterval(interval);
   }, []);
-
 
   const GetUserData = () => {
     AxiosInstance.get('users/me/')
@@ -227,7 +188,6 @@ const Navbar = () => {
               <MenuIcon />
             </IconButton>
             <Typography
-
               noWrap
               component="div"
               sx={{ flexGrow: 1, fontFamily: '"Open Sans", sans-serif' }}
@@ -235,52 +195,9 @@ const Navbar = () => {
               Infinite World Tour System | {currentTime.utcTime} UTC | {currentTime.localTime} Local
             </Typography>
 
-            <Tooltip title="Notificações">
-              <IconButton color="inherit" onClick={(e) => setAnchorNotif(e.currentTarget)}>
-                <Badge badgeContent={notifications.length} color="error">
-                  <NotificationsIcon />
-                </Badge>
-              </IconButton>
-            </Tooltip>
+            {/* Integrando o componente Notifications */}
+            <Notifications />
 
-            <Menu
-              anchorEl={anchorNotif}
-              open={notifOpen}
-              onClose={() => setAnchorNotif(null)}
-              PaperProps={{
-                sx: { width: 320, maxHeight: 400, overflowY: "auto" },
-              }}
-            >
-              {notifications.length === 0 ? (
-                <MenuItem>Sem notificações</MenuItem>
-              ) : (
-                notifications.map((notif, index) => {
-                  console.log("Notificação:", notif); // Depuração
-                  return (
-                    <Box key={notif.id}>
-                      <MenuItem sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        {notif.message.includes("aprovado") ? (
-                          <FlightTakeoffIcon color="success" sx={{ fontSize: 40 }} />
-                        ) : notif.message.includes("rejeitado") ? (
-                          <ErrorIcon color="error" sx={{ fontSize: 40 }} />
-                        ) : (
-                          <Avatar src={notif.image} sx={{ width: 40, height: 40, borderRadius: "50%" }} />
-                        )}
-                        <Box sx={{ flex: 1 }}>
-                          <Typography variant="body2" sx={{ whiteSpace: "normal", wordWrap: "break-word" }}>
-                            {notif.message}
-                          </Typography>
-                        </Box>
-                        <IconButton size="small" onClick={() => handleDismissNotification(notif.id)}>
-                          <CloseIcon fontSize="small" />
-                        </IconButton>
-                      </MenuItem>
-                      {index < notifications.length - 1 && <Divider />}
-                    </Box>
-                  );
-                })
-              )}
-            </Menu>
             <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
               <IconButton
                 onClick={handleMenuOpen}
