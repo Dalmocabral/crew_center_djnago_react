@@ -227,6 +227,21 @@ const Dashboard = () => {
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
   };
 
+  const barChartOptions = {
+    responsive: false, // Evita o problema do "limbo"
+    maintainAspectRatio: false, // Permite definir altura customizada
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+  };
+  
+  const doughnutChartOptions = {
+    responsive: false, // Evita bug de redimensionamento infinito
+    maintainAspectRatio: false,
+  };
+  
   return (
     <Container maxWidth="lg">
       <Typography variant="h4" sx={{ my: 3, textAlign: "center" }}>
@@ -255,7 +270,7 @@ const Dashboard = () => {
           <Card sx={{ p: 2, display: "flex", alignItems: "center", gap: 2 }}>
             <AccessTimeIcon sx={{ fontSize: 40, color: "#ff9800" }} />
             <CardContent>
-              <Typography variant="h6">Total de Horas</Typography>
+              <Typography variant="h6">Total Hours</Typography>
               <Typography variant="h5">{totalDuration}h</Typography>
             </CardContent>
           </Card>
@@ -266,7 +281,7 @@ const Dashboard = () => {
           <Card sx={{ p: 2, display: "flex", alignItems: "center", gap: 2 }}>
             <FlightIcon sx={{ fontSize: 40, color: "#1976d2" }} />
             <CardContent>
-              <Typography variant="h6">Total de Voos</Typography>
+              <Typography variant="h6">Total Flights</Typography>
               <Typography variant="h5">{totalFlights}</Typography>
             </CardContent>
           </Card>
@@ -354,19 +369,19 @@ const Dashboard = () => {
       {/* Charts */}
       <Grid container spacing={2} sx={{ mt: 3 }}>
         <Grid item xs={12} md={6}>
-          <Card sx={{ p: 2 }}>
+          <Card sx={{ p: 2, minHeight: 400 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
-              Voos por Dia (Últimos 30 Dias)
+            Flights per Day (Last 30 Days)
             </Typography>
-            <Bar data={barChartData} />
+            <Bar data={barChartData} options={barChartOptions} width={400} height={300} />
           </Card>
         </Grid>
         <Grid item xs={12} md={6}>
-          <Card sx={{ p: 2 }}>
+          <Card sx={{ p: 2, minHeight: 400 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
-              Tipos de Aeronave (Últimos 30 Dias)
+            Aircraft Types (Last 30 Days)
             </Typography>
-            <Doughnut data={doughnutChartData} />
+            <Doughnut data={doughnutChartData} options={doughnutChartOptions} width={400} height={300} />
           </Card>
         </Grid>
       </Grid>
@@ -378,7 +393,7 @@ const Dashboard = () => {
           <Card sx={{ p: 2 }}>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Top 5 Melhores Tempos de Voo
+              Top 5 Best Flight Times
               </Typography>
               <TableContainer component={Paper}>
                 <Table>
@@ -414,7 +429,7 @@ const Dashboard = () => {
           <Card sx={{ p: 2 }}>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Top 5 Total de Voos
+              Top 5 Total Flights
               </Typography>
               <TableContainer component={Paper}>
                 <Table>

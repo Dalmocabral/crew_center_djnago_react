@@ -167,7 +167,7 @@ const UserDetail = () => {
   }
 
   if (!user) {
-    return <Typography>Usuário não encontrado.</Typography>;
+    return <Typography>User not found.</Typography>;
   }
 
   // Format duration from seconds to HH:MM
@@ -210,10 +210,10 @@ const UserDetail = () => {
                   Sistema World Tour
                 </Typography>
                 <Typography variant="body1">
-                  Nome: {user.first_name} {user.last_name}
+                  Name: {user.first_name} {user.last_name}
                 </Typography>
                 <Typography variant="body1">
-                  País: <img
+                  Country: <img
                     src={`https://flagcdn.com/w320/${user.country ? user.country.toLowerCase() : ''}.png`}
                     alt={user.country || 'País não informado'}
                     style={{ width: '24px', height: 'auto' }}
@@ -222,27 +222,27 @@ const UserDetail = () => {
                 {userMetrics ? (
                   <>
                     <Typography variant="body1" sx={{ mt: 2 }}>
-                      Total de Voos: {userMetrics.total_flights}
+                      Total Flights: {userMetrics.total_flights}
                     </Typography>
                     <Typography variant="body1">
-                      Total de Horas: {userMetrics.total_flight_time}h
+                      Total Hours: {userMetrics.total_flight_time}h
                     </Typography>
                     <Typography variant="body1">
-                      Total de Voos (30 dias): {userMetrics.total_flights_last_30_days}
+                      Total Flights (Last 30 Days): {userMetrics.total_flights_last_30_days}
                     </Typography>
                     <Typography variant="body1">
-                      Total de Horas (30 dias): {userMetrics.total_flight_time_last_30_days}h
+                      Total Hours (Last 30 Days): {userMetrics.total_flight_time_last_30_days}h
                     </Typography>
                     <Typography variant="body1">
-                      Média de Voos (30 dias): {userMetrics.average_flights_per_day.toFixed(2)} voos/dia
+                      Average Flights (Last 30 Days): {userMetrics.average_flights_per_day.toFixed(2)} flights/day
                     </Typography>
                     <Typography variant="body1">
-                      Média de Horas (30 dias): {userMetrics.average_flight_time_per_day.toFixed(2)} horas/dia
+                      Average Hours (Last 30 Days): {userMetrics.average_flight_time_per_day.toFixed(2)} hours/day
                     </Typography>
                   </>
                 ) : (
                   <Typography variant="body1" color="text.secondary">
-                    Nenhuma métrica disponível.
+                    No metrics available.
                   </Typography>
                 )}
               </Box>
@@ -270,21 +270,21 @@ const UserDetail = () => {
                 {ifcData ? (
                   <>
                     <Typography variant="body1">
-                      Voos Online: {ifcData.onlineFlights}
+                      Flights Online: {ifcData.onlineFlights}
                     </Typography>
                     <Typography variant="body1">
                       XP: {ifcData.xp}
                     </Typography>
                     <Typography variant="body1">
-                      Tempo de Voo: {ifcData.flightTime} minutos
+                      Time flight: {ifcData.flightTime} minutos
                     </Typography>
                     <Typography variant="body1">
-                      Nível: {ifcData.grade}
+                      Level: {ifcData.grade}
                     </Typography>
                   </>
                 ) : (
                   <Typography variant="body1" color="text.secondary">
-                    Nenhum dado disponível.
+                    No data available.
                   </Typography>
                 )}
               </Box>
@@ -296,55 +296,74 @@ const UserDetail = () => {
       {/* Seção de Prêmios */}
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-          Prêmios Conquistados
+          World Tour Awards Achieved
         </Typography>
-        <Grid container spacing={2} justifyContent="center">
-          {paginatedAwards.length > 0 ? (
-            paginatedAwards.map((award) => (
-              <Grid item xs={6} sm={4} md={3} key={award.id} sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Card sx={{ boxShadow: 3, borderRadius: '50%', width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <CardMedia
-                      component="img"
-                      image={award.image}
-                      alt={award.name}
-                      sx={{ width: '80px', height: '80px', borderRadius: '50%' }}
-                    />
-                  </Card>
-                  <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
-                    {award.name}
-                  </Typography>
-                  <Box sx={{ width: '100%', mt: 1 }}>
-                    <LinearProgress variant="determinate" value={award.progress} />
-                    <Typography variant="caption" sx={{ mt: 1 }}>
-                      {award.progress}% concluído
+        {/* Contêiner com barra de rolagem */}
+        <Box
+          sx={{
+            maxHeight: '400px', // Altura máxima para exibir a barra de rolagem
+            overflowY: 'auto', // Habilita a rolagem vertical
+            p: 1, // Adiciona um pequeno padding
+          }}
+        >
+          <Grid container spacing={2} justifyContent="center">
+            {combinedAwards.length > 0 ? (
+              combinedAwards.map((award) => (
+                <Grid
+                  item
+                  xs={6}
+                  sm={4}
+                  md={3}
+                  key={award.id}
+                  sx={{ display: 'flex', justifyContent: 'center' }}
+                >
+                  <Box sx={{ textAlign: 'center' }}>
+                    {/* Card do Prêmio */}
+                    <Card
+                      sx={{
+                        boxShadow: 3,
+                        borderRadius: '50%',
+                        width: '100px',
+                        height: '100px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <CardMedia
+                        component="img"
+                        image={award.image}
+                        alt={award.name}
+                        sx={{ width: '80px', height: '80px', borderRadius: '50%' }}
+                      />
+                    </Card>
+                    {/* Nome do Prêmio */}
+                    <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
+                      {award.name}
                     </Typography>
+                    {/* Barra de Progresso */}
+                    <Box sx={{ width: '100%', mt: 1 }}>
+                      <LinearProgress variant="determinate" value={award.progress} />
+                      <Typography variant="caption" sx={{ mt: 1 }}>
+                        {award.progress}% Completed
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
-              </Grid>
-            ))
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              Nenhum prêmio conquistado ainda.
-            </Typography>
-          )}
-        </Grid>
-        {combinedAwards.length > itemsPerPage && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-            <Pagination
-              count={Math.ceil(combinedAwards.length / itemsPerPage)}
-              page={awardsPage}
-              onChange={(event, value) => setAwardsPage(value)}
-              color="primary"
-            />
-          </Box>
-        )}
+                </Grid>
+              ))
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No awards won yet.
+              </Typography>
+            )}
+          </Grid>
+        </Box>
       </Box>
 
       {/* Tabela de voos aprovados */}
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" gutterBottom>
-          Voos Aprovados
+          Flights
         </Typography>
         {error && (
           <Typography variant="body2" color="error">
@@ -386,20 +405,20 @@ const UserDetail = () => {
                       <TableCell>{formatDuration(flight.duration)}</TableCell>
                       <TableCell>{flight.aircraft}</TableCell>
                       <TableCell>
-  <Chip
-    label={flight.status}
-    color={
-      flight.status === "Pending"
-        ? "warning"
-        : flight.status === "Approved"
-        ? "success"
-        : flight.status === "Rejected"
-        ? "error"
-        : "default"
-    }
-    variant="outlined" // Ou remova para um fundo sólido
-  />
-</TableCell>
+                        <Chip
+                          label={flight.status}
+                          color={
+                            flight.status === "Pending"
+                              ? "warning"
+                              : flight.status === "Approved"
+                                ? "success"
+                                : flight.status === "Rejected"
+                                  ? "error"
+                                  : "default"
+                          }
+                          variant="outlined" // Ou remova para um fundo sólido
+                        />
+                      </TableCell>
                       <TableCell>
                         <IconButton component="a" href={`/app/briefing/${flight.id}`}>
                           <PreviewIcon />
