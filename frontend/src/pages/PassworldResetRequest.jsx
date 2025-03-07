@@ -16,42 +16,30 @@ import {
   Alert,
 } from '@mui/material';
 import AxiosInstance from '../components/AxiosInstance'; // Importe o AxiosInstance
-import { useNavigate, useSearchParams } from 'react-router-dom'; // Para redirecionar e capturar o token
+import { useNavigate } from 'react-router-dom'; // Para redirecionar o usuário
 
-const PasswordResetConfirm = () => {
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+const PasswordResetRequest = () => {
+  const [email, setEmail] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false); // Estado para controlar o diálogo
   const [snackbarOpen, setSnackbarOpen] = useState(false); // Estado para controlar o Snackbar
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  const [searchParams] = useSearchParams(); // Captura a query string
-  const token = searchParams.get('token'); // Extrai o token da query string
   const navigate = useNavigate(); // Hook para redirecionamento
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Verifica se as senhas coincidem
-    if (newPassword !== confirmPassword) {
-      setSnackbarMessage('Passwords do not match. Please try again.');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-      return;
-    }
-
     try {
-      // Envia a nova senha para o backend
-      await AxiosInstance.post('/api/password_reset/confirm/', {
-        token: token,
-        password: newPassword,
+      // Envia a solicitação de reset de senha para o backend
+      await AxiosInstance.post('/api/password_reset/', {
+        email: email,
       });
 
       // Abre o diálogo de confirmação
       setDialogOpen(true);
     } catch (error) {
       // Exibe mensagem de erro
-      setSnackbarMessage('Failed to reset password. Please try again.');
+      setSnackbarMessage('Failed to send password reset request. Please try again.');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
       console.error('Error:', error.response ? error.response.data : error.message);
@@ -92,29 +80,19 @@ const PasswordResetConfirm = () => {
             Reset Your Password
           </Typography>
           <Typography variant="body2" sx={{ mb: 3, textAlign: 'center' }}>
-            Please enter your new password below.
+            Enter your email address below, and we'll send you instructions to reset your password.
           </Typography>
           <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
-            {/* Campo de Nova Senha */}
+            {/* Campo de E-mail */}
             <TextField
               margin="normal"
               required
               fullWidth
-              label="New Password"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-
-            {/* Campo de Confirmação de Senha */}
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Confirm New Password"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              label="Email Address"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
 
             {/* Botão de Envio */}
@@ -124,7 +102,7 @@ const PasswordResetConfirm = () => {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Reset Password
+              Send Reset Instructions
             </Button>
           </Box>
         </Paper>
@@ -132,10 +110,10 @@ const PasswordResetConfirm = () => {
 
       {/* Diálogo de Confirmação */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
-        <DialogTitle>Password Reset Successful</DialogTitle>
+        <DialogTitle>Password Reset Request Sent</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Your password has been successfully reset. You can now log in with your new password.
+            Please check your email inbox (and spam folder) for instructions on how to reset your password.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -160,4 +138,4 @@ const PasswordResetConfirm = () => {
   );
 };
 
-export default PasswordResetConfirm;
+export default PasswordResetRequest;
