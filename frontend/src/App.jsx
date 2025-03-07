@@ -17,12 +17,16 @@ import Briefing from './pages/briefing';
 import AwardDetail from './pages/AwardDetail';
 import UserDetail from './pages/UserDetail';
 import ProfileEdit from './pages/ProfileEdit';
+import PassworldResetRequest from './pages/PassworldResetRequest';
+import PasswordResetConfirm from './pages/PassworldResetConfirm';
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/request/passworld_reset" element={<PassworldResetRequest />} />
+      <Route path="/password_reset" element={<PasswordResetConfirm />} />
       <Route path="/app" element={<Navbar />}>
       
         <Route element={<ProtectedRoutes />}>

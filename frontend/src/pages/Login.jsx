@@ -12,21 +12,21 @@ import {
   IconButton,
   InputAdornment,
   Snackbar,
-  Alert
+  Alert,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import AxiosInstance from '../components/AxiosInstance'; // Importe o AxiosInstance
-import { useNavigate } from 'react-router-dom'; // Para redirecionar após o login
+import AxiosInstance from '../components/AxiosInstance'; // Import AxiosInstance
+import { useNavigate } from 'react-router-dom'; // For navigation
 
-// Tema personalizado (opcional)
+// Custom theme (optional)
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2', // Azul
+      main: '#1976d2', // Blue
     },
     secondary: {
-      main: '#dc004e', // Rosa
+      main: '#dc004e', // Pink
     },
   },
 });
@@ -57,20 +57,21 @@ const Login = () => {
         password: data.password,
       });
 
-      // Armazena o token no localStorage
+      // Store the token in localStorage
       localStorage.setItem('token', response.data.token);
-      console.log(response)
-      // Exibe mensagem de sucesso
+      console.log(response);
+
+      // Show success message
       setSnackbarMessage('Login successful! Redirecting to Dashboard...');
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
 
-      // Redireciona para a página Dashboard após 2 segundos
+      // Redirect to Dashboard after 2 seconds
       setTimeout(() => {
-        navigate('/app/dashboard'); // Redireciona para a rota do Dashboard
+        navigate('/app/dashboard'); // Redirect to Dashboard route
       }, 2000);
     } catch (error) {
-      // Exibe mensagem de erro
+      // Show error message
       setSnackbarMessage('Login failed. Please check your credentials.');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
@@ -109,7 +110,7 @@ const Login = () => {
               Login
             </Typography>
             <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 3, width: '100%' }}>
-              {/* Campo Email */}
+              {/* Email Field */}
               <Controller
                 name="email"
                 control={control}
@@ -135,7 +136,7 @@ const Login = () => {
                 )}
               />
 
-              {/* Campo Password */}
+              {/* Password Field */}
               <Controller
                 name="password"
                 control={control}
@@ -146,7 +147,7 @@ const Login = () => {
                     margin="normal"
                     required
                     fullWidth
-                    label="Senha"
+                    label="Password"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
                     error={!!errors.password}
@@ -164,18 +165,23 @@ const Login = () => {
                 )}
               />
 
-              {/* Botão de Submit */}
+              {/* Submit Button */}
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
               >
-                Entrar
+                Sign In
               </Button>
+
+              {/* Links for Registration and Password Reset */}
               <Box sx={{ textAlign: 'center' }}>
-                <Link href="/register" variant="body2">
-                  Não tem uma conta? Cadastre-se
+                <Link href="/register" variant="body2" sx={{ display: 'block', mb: 1 }}>
+                  Don't have an account? Sign Up
+                </Link>
+                <Link href="/request/passworld_reset" variant="body2">
+                  Forgot your password? Reset it here
                 </Link>
               </Box>
             </Box>
@@ -183,7 +189,7 @@ const Login = () => {
         </Container>
       </Box>
 
-      {/* Snackbar para feedback */}
+      {/* Snackbar for Feedback */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}

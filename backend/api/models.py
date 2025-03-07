@@ -5,6 +5,15 @@ from django.contrib.auth import get_user_model
 from api.choice import CHOICE_AIRCRAFT
 from django.utils import timezone
 
+from django.core.mail import EmailMultiAlternatives
+from django.dispatch import receiver
+from django.template.loader import render_to_string
+from django.urls import reverse
+
+from django_rest_passwordreset.signals import reset_password_token_created
+from django.utils.html import strip_tags
+
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -22,9 +31,6 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True )
         return self.create_user(email, password, **extra_fields)
 
-
-
-
 class CustomUser(AbstractUser):
     email = models.EmailField(max_length=200, unique=True)
     first_name = models.CharField(max_length=200, blank=True)
@@ -38,8 +44,6 @@ class CustomUser(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-
-
 
 User = get_user_model()
 
@@ -76,8 +80,6 @@ class FlightLeg(models.Model):
 
     def __str__(self):
         return f"Leg {self.leg_number}: {self.from_airport} to {self.to_airport}"
-
-
 
 class AllowedAircraft(models.Model):
     award = models.ForeignKey(Award, related_name='allowed_aircrafts', on_delete=models.CASCADE)
@@ -176,8 +178,6 @@ class UserAward(models.Model):
         def __str__(self):
             return self.name
         
-
-
 class PirepsFlight (models.Model):
     STATUS_CHOICES = [
         ('In Review', 'In Review'),
@@ -201,7 +201,6 @@ class PirepsFlight (models.Model):
     def __str__(self):
         return f"{self.flight_number} - {self.pilot.first_name}"
     
-
 class Notification(models.Model):
     recipient = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.CharField(max_length=255)
@@ -211,3 +210,25 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.recipient.username}: {self.message}"
+    
+@receiver(reset_password_token_created)
+def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
+    site_link = "http://localhost:5173/"
+    full_link = f"{site_link}password_reset?token={reset_password_token.key}"
+
+    context = {
+        'full_link': full_link,
+        'email': reset_password_token.user.email,
+    }
+
+    html_message = render_to_string("backend/email_template.html", context)
+    plain_message = strip_tags(html_message)
+
+    msg = EmailMultiAlternatives(
+        subject=f"Password Reset Request for {reset_password_token.user.email}",
+        body=plain_message,
+        from_email="admin@myproject.com",
+        to=[reset_password_token.user.email],
+    )
+    msg.attach_alternative(html_message, "text/html")
+    msg.send()

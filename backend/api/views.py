@@ -10,6 +10,8 @@ from django.db.models import Sum, Count
 from rest_framework.decorators import action
 from rest_framework.viewsets import ViewSet
 from datetime import timedelta
+from django.http import HttpResponse
+from .utils import send_welcome_email
 
 User = get_user_model()
 
@@ -322,3 +324,8 @@ class ProfileUpdateView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+def test_email(request):
+    send_welcome_email("destinatario@email.com")
+    return HttpResponse("E-mail enviado com sucesso!")
