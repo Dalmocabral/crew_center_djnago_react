@@ -14,13 +14,17 @@ import {
   DialogActions,
   Snackbar,
   Alert,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material'; // Ícones para mostrar/ocultar senha
 import AxiosInstance from '../components/AxiosInstance'; // Importe o AxiosInstance
 import { useNavigate, useSearchParams } from 'react-router-dom'; // Para redirecionar e capturar o token
 
 const PasswordResetConfirm = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar senha
   const [dialogOpen, setDialogOpen] = useState(false); // Estado para controlar o diálogo
   const [snackbarOpen, setSnackbarOpen] = useState(false); // Estado para controlar o Snackbar
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -69,6 +73,11 @@ const PasswordResetConfirm = () => {
     setSnackbarOpen(false);
   };
 
+  // Função para alternar entre mostrar/ocultar senha
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <Box
       sx={{
@@ -103,9 +112,18 @@ const PasswordResetConfirm = () => {
               required
               fullWidth
               label="New Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={handleTogglePasswordVisibility}>
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
             {/* Campo de Confirmação de Senha */}
@@ -114,9 +132,18 @@ const PasswordResetConfirm = () => {
               required
               fullWidth
               label="Confirm New Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={handleTogglePasswordVisibility}>
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
             {/* Botão de Envio */}
