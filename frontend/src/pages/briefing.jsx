@@ -7,19 +7,19 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const Briefing = () => {
-  const { id } = useParams(); // Captura o ID do voo da URL
-  const [flightData, setFlightData] = useState(null); // Estado para armazenar os dados do voo
-  const mapContainer = useRef(null); // Referência para o contêiner do mapa
-  const map = useRef(null); // Referência para a instância do mapa
+  const { id } = useParams(); // Capture the flight ID from the URL
+  const [flightData, setFlightData] = useState(null); // State to store flight data
+  const mapContainer = useRef(null); // Reference for the map container
+  const map = useRef(null); // Reference for the map instance
 
-  // Busca os detalhes do voo ao carregar o componente
+  // Fetch flight details when the component mounts
   useEffect(() => {
     const fetchFlightDetails = async () => {
       try {
         const response = await AxiosInstance.get(`/pirepsflight/${id}/`);
         setFlightData(response.data);
       } catch (error) {
-        console.error('Erro ao buscar detalhes do voo:', error);
+        console.error('Error fetching flight details:', error);
       }
     };
 
@@ -28,28 +28,28 @@ const Briefing = () => {
 
   useEffect(() => {
     if (flightData && !map.current) {
-      // Inicializa o mapa
+      // Initialize the map
       map.current = L.map(mapContainer.current).setView([-12.163200486951586, -53.51511964322111], 8);
 
-      // Adiciona a camada de tiles (MapTiler)
+      // Add the tile layer (MapTiler)
       L.tileLayer('https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=oLMznTPIDCPrc3mGZdoh', {
         attribution: '© <a href="https://www.maptiler.com/">MapTiler</a> © <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
       }).addTo(map.current);
 
-      // Busca os dados dos aeroportos
+      // Fetch airport data
       const fetchAirports = async () => {
         const response = await fetch('https://raw.githubusercontent.com/mwgg/Airports/master/airports.json');
         return await response.json();
       };
 
-      // Adiciona marcadores e polilinhas após o mapa carregar
+      // Add markers and polylines after the map loads
       fetchAirports().then((airportsData) => {
-        // Obtém os dados dos aeroportos de partida, chegada e alternativo
+        // Get departure, arrival, and alternate airport data
         const depAirport = airportsData[flightData.departure_airport];
         const arrAirport = airportsData[flightData.arrival_airport];
         const altAirport = airportsData[flightData.alternate_airport];
 
-        // Adiciona marcadores e popups
+        // Add markers and popups
         if (depAirport) {
           L.marker([depAirport.lat, depAirport.lon])
             .addTo(map.current)
@@ -68,7 +68,7 @@ const Briefing = () => {
             .bindPopup(`<strong>${altAirport.icao}</strong>`);
         }
 
-        // Desenha a linha entre os aeroportos de partida e chegada
+        // Draw a line between departure and arrival airports
         if (depAirport && arrAirport) {
           const latLngs = [
             [depAirport.lat, depAirport.lon],
@@ -76,13 +76,13 @@ const Briefing = () => {
           ];
           L.polyline(latLngs, { color: '#000' }).addTo(map.current);
 
-          // Calcula a distância entre os aeroportos
+          // Calculate the distance between airports
           const distance = calculateDistance(depAirport.lat, depAirport.lon, arrAirport.lat, arrAirport.lon);
           console.log(distance);
           document.getElementById('distance').innerText = `${distance.toFixed(0)} nm`;
         }
 
-        // Ajusta o zoom e o centro do mapa para incluir todos os aeroportos
+        // Adjust the map's zoom and center to include all airports
         if (depAirport && arrAirport) {
           const bounds = L.latLngBounds(
             [depAirport.lat, depAirport.lon],
@@ -94,7 +94,7 @@ const Briefing = () => {
       });
     }
 
-    // Limpeza ao desmontar o componente
+    // Cleanup when the component unmounts
     return () => {
       if (map.current) {
         map.current.remove();
@@ -103,33 +103,33 @@ const Briefing = () => {
     };
   }, [flightData]);
 
-  // Função para calcular a distância entre dois pontos (Haversine)
+  // Function to calculate the distance between two points (Haversine formula)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const toRadians = (degrees) => degrees * (Math.PI / 180);
-    const R = 6371; // Raio da Terra em km
+    const R = 6371; // Earth's radius in km
     const dLat = toRadians(lat2 - lat1);
     const dLon = toRadians(lon2 - lon1);
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c * 0.539957; // Converte km para milhas náuticas (nm)
+    return R * c * 0.539957; // Convert km to nautical miles (nm)
   };
 
   if (!flightData) {
-    return <Typography>Carregando...</Typography>; // Exibe uma mensagem de carregamento enquanto os dados são buscados
+    return <Typography>Loading...</Typography>; // Display a loading message while fetching data
   }
 
   return (
     <Container maxWidth="xl" style={{ padding: '20px', height: '100vh' }}>
       <Grid container spacing={3} style={{ height: '100%' }}>
-        {/* Coluna de Informações com Barra de Rolagem */}
+        {/* Information Column with Scrollbar */}
         <Grid item xs={12} md={6} style={{ height: '100%', overflow: 'auto' }}>
           <Card style={{ backgroundColor: '#292b30', color: '#fff', marginBottom: '20px' }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Typography variant="body1">
-                  <i className="fa-solid fa-circle-info"></i> Este briefing foi gerado em: {flightData.registration_date}
+                  <i className="fa-solid fa-circle-info"></i> This briefing was generated on: {flightData.registration_date}
                 </Typography>
                 <IconButton size="small" style={{ color: '#fff' }}>
                   <CloseIcon />
@@ -141,68 +141,68 @@ const Briefing = () => {
           <Card style={{ marginBottom: '20px' }}>
             <CardContent>
               <Typography variant="h5" gutterBottom>
-                Informações de voo
+                Flight Information
               </Typography>
               <Divider style={{ marginBottom: '20px' }} />
 
-              {/* Primeira linha de informações */}
+              {/* First row of information */}
               <Box display="flex" justifyContent="space-between" marginBottom="20px">
                 <Box textAlign="center">
-                  <Typography variant="subtitle1">Número de voo</Typography>
+                  <Typography variant="subtitle1">Flight Number</Typography>
                   <Typography variant="body1">{flightData.flight_number || '--- / ---'}</Typography>
                   <Divider />
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="subtitle1">Indicativo</Typography>
+                  <Typography variant="subtitle1">Callsign</Typography>
                   <Typography variant="body1">{flightData.flight_icao || '--- / ---'}</Typography>
                   <Divider />
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="subtitle1">Partida</Typography>
+                  <Typography variant="subtitle1">Departure</Typography>
                   <Typography variant="body1">{flightData.departure_airport || '--- / ---'}</Typography>
                   <Divider />
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="subtitle1">Chegada</Typography>
+                  <Typography variant="subtitle1">Arrival</Typography>
                   <Typography variant="body1">{flightData.arrival_airport || '--- / ---'}</Typography>
                   <Divider />
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="subtitle1">Alternar</Typography>
+                  <Typography variant="subtitle1">Alternate</Typography>
                   <Typography variant="body1">{flightData.alternate_airport || '--- / ---'}</Typography>
                   <Divider />
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="subtitle1">Aeronave</Typography>
+                  <Typography variant="subtitle1">Aircraft</Typography>
                   <Typography variant="body1">{flightData.aircraft || '--- / ---'}</Typography>
                   <Divider />
                 </Box>
               </Box>
 
-              {/* Segunda linha de informações */}
+              {/* Second row of information */}
               <Box display="flex" justifyContent="space-between">
                 <Box textAlign="center">
-                  <Typography variant="subtitle1">Data de partida</Typography>
+                  <Typography variant="subtitle1">Departure Date</Typography>
                   <Typography variant="body1">
                     {new Date(flightData.registration_date).toLocaleDateString()}
                   </Typography>
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="subtitle1">Horário Dep</Typography>
+                  <Typography variant="subtitle1">Dep Time</Typography>
                   <Typography variant="body1">--- / ---</Typography>
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="subtitle1">Tempo Arr</Typography>
+                  <Typography variant="subtitle1">Arr Time</Typography>
                   <Typography variant="body1">--- / ---</Typography>
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="subtitle1">Distância da rota</Typography>
+                  <Typography variant="subtitle1">Route Distance</Typography>
                   <Typography variant="body1" id="distance">
-                    {/* Distância calculada aqui */}
+                    {/* Calculated distance will appear here */}
                   </Typography>
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="subtitle1">Cruzeiro</Typography>
+                  <Typography variant="subtitle1">Cruise</Typography>
                   <Typography variant="body1">--- / ---</Typography>
                 </Box>
                 <Box textAlign="center">
@@ -216,11 +216,11 @@ const Briefing = () => {
           <Card style={{ marginBottom: '20px' }}>
             <CardContent>
               <Typography variant="h5" gutterBottom>
-                Rota
+                Route
               </Typography>
               <Divider style={{ marginBottom: '20px' }} />
               <Box style={{ backgroundColor: '#ccc', height: '100px', padding: '20px' }}>
-                {/* Conteúdo da rota aqui */}
+                {/* Route content here */}
               </Box>
             </CardContent>
           </Card>
@@ -228,17 +228,17 @@ const Briefing = () => {
           <Card style={{ marginBottom: '20px' }}>
             <CardContent>
               <Typography variant="h5" gutterBottom>
-                Observações de Despacho
+                Dispatch Notes
               </Typography>
               <Divider style={{ marginBottom: '20px' }} />
               <Box style={{ backgroundColor: '#ccc', height: '100px', padding: '20px' }}>
-                {/* Conteúdo das observações aqui */}
+                {/* Dispatch notes content here */}
               </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Coluna do Mapa Fixo */}
+        {/* Fixed Map Column */}
         <Grid item xs={12} md={6} style={{ height: '100%' }}>
           <Card style={{ height: '90%', display: 'flex', flexDirection: 'column' }}>
             <CardContent style={{ flex: 1, padding: 0 }}>

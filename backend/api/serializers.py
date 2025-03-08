@@ -53,9 +53,15 @@ class PirepsFlightSerializer(serializers.ModelSerializer):
         read_only_fields = ('pilot',)  # Impede alteração do piloto
 
 class AwardsSerializer(serializers.ModelSerializer):
+    total_legs = serializers.SerializerMethodField()  # Campo calculado para o total de pernas
+
     class Meta:
         model = Award
         fields = '__all__'
+
+    def get_total_legs(self, obj):
+        # Retorna o número total de pernas associadas ao prêmio
+        return obj.flight_legs.count()
 
 class FlightLegSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Alert, // Importe o componente Alert
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -26,9 +27,9 @@ import aircraftChoices from '../data/aircraftChoices';
 
 const PirepsFlights = () => {
   const location = useLocation();
-  const { leg } = location.state || {}; // Acesse os dados da leg
+  const navigate = useNavigate();
+  const { leg } = location.state || {};
 
-  // Estados para os campos do formulário
   const [flightIcao, setFlightIcao] = useState('');
   const [flightNumber, setFlightNumber] = useState('');
   const [departureAirport, setDepartureAirport] = useState(leg?.from_airport || '');
@@ -37,7 +38,10 @@ const PirepsFlights = () => {
   const [network, setNetwork] = useState('');
   const [flightDuration, setFlightDuration] = useState(dayjs('2022-04-17T00:00'));
 
-  // Use useEffect para preencher os campos quando a leg for carregada
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
+  const [dialogType, setDialogType] = useState('success');
+
   useEffect(() => {
     if (leg) {
       setDepartureAirport(leg.from_airport);
@@ -45,23 +49,18 @@ const PirepsFlights = () => {
     }
   }, [leg]);
 
-  // Estado do Dialog
-  const [openDialog, setOpenDialog] = useState(false);
-  const [dialogMessage, setDialogMessage] = useState('');
-  const [dialogType, setDialogType] = useState('success'); // 'success' ou 'error'
-
-  // Função para fechar o Dialog
   const handleCloseDialog = () => {
     setOpenDialog(false);
+    if (dialogType === 'success') {
+      navigate('/app/dashboard');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Formata a duração do voo como "HH:mm:ss"
     const formattedDuration = flightDuration.format('HH:mm:ss');
 
-    // Dados a serem enviados
     const formData = {
       flight_icao: flightIcao,
       flight_number: flightNumber,
@@ -73,26 +72,20 @@ const PirepsFlights = () => {
     };
 
     try {
-      // Envia os dados para o backend
       await AxiosInstance.post('pirepsflight/', formData);
-
-      // Exibe mensagem de sucesso
-      setDialogMessage('Pireps salvo com sucesso!');
+      setDialogMessage('Pireps saved successfully!');
       setDialogType('success');
       setOpenDialog(true);
 
-      // Limpa os campos do formulário após o envio bem-sucedido
       setFlightIcao('');
       setFlightNumber('');
       setDepartureAirport('');
       setArrivalAirport('');
       setAircraft('');
-      setFlightDuration(dayjs('2022-04-17T00:00')); // Reset para a duração inicial
+      setFlightDuration(dayjs('2022-04-17T00:00'));
     } catch (error) {
-      console.error('Erro ao salvar Pireps:', error.response ? error.response.data : error.message);
-
-      // Exibe mensagem de erro
-      setDialogMessage('Erro ao salvar Pireps. Verifique os dados e tente novamente.');
+      console.error('Error saving Pireps:', error.response ? error.response.data : error.message);
+      setDialogMessage('Error saving Pireps. Please check the data and try again.');
       setDialogType('error');
       setOpenDialog(true);
     }
@@ -106,8 +99,13 @@ const PirepsFlights = () => {
             Pireps Flights
           </Typography>
           <Typography variant="body1" gutterBottom>
-            Preencha os dados do voo abaixo:
+            Fill in the flight details below:
           </Typography>
+
+          {/* Alerta em vermelho */}
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            Due to high demand, flight approval may take up to 3 days. Thank you for your patience.
+          </Alert>
 
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
@@ -117,7 +115,7 @@ const PirepsFlights = () => {
                   label="Leg Number"
                   value={leg?.leg_number || ''}
                   fullWidth
-                  disabled // Campo apenas para leitura
+                  disabled
                 />
               </Grid>
 
@@ -213,7 +211,7 @@ const PirepsFlights = () => {
               {/* Botão de Enviar */}
               <Grid item xs={12}>
                 <Button type="submit" variant="contained" color="primary" fullWidth>
-                  Enviar
+                  Submit
                 </Button>
               </Grid>
             </Grid>
@@ -223,7 +221,7 @@ const PirepsFlights = () => {
 
       {/* Dialog de Sucesso ou Erro */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>{dialogType === 'success' ? 'Sucesso' : 'Erro'}</DialogTitle>
+        <DialogTitle>{dialogType === 'success' ? 'Success' : 'Error'}</DialogTitle>
         <DialogContent>
           <DialogContentText>{dialogMessage}</DialogContentText>
         </DialogContent>

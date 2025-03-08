@@ -1,10 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardMedia, Button, Grid, Typography, Container } from '@mui/material';
+import { Card, CardContent, CardMedia, Button, Grid, Typography, Container, TextField } from '@mui/material';
 import AxiosInstance from '../components/AxiosInstance';
+import { Chip } from "@mui/material";
 
 const Awards = () => {
   const [awards, setAwards] = React.useState([]); // Estado para armazenar os prêmios
+  const [searchTerm, setSearchTerm] = React.useState(''); // Estado para o termo de pesquisa
   const navigate = useNavigate(); // Hook para navegação
 
   // Função para buscar os prêmios da API
@@ -29,49 +31,67 @@ const Awards = () => {
 
   return (
     <Container>
-      <Typography variant="h3" gutterBottom 
-      sx={{ textAlign: "center" }}
-      >
-       List World Tour
+      <Typography variant="h3" gutterBottom sx={{ textAlign: "center" }}>
+        List World Tour
       </Typography>
       <Typography paragraph sx={{ textAlign: "center" }}>
-      Here you can see all the available World Tours.
+        Here you can see all the available World Tours.
       </Typography>
-      <Grid container spacing={3}>
-        {awards.map((award) => (
-          <Grid item key={award.id} xs={9} sm={6} md={4}>
-            <Card>
-              {/* Exibe a imagem do prêmio */}
-              <CardMedia
-                component="img"
-                height="140"
-                image={award.link_image}
-                alt={award.name}
-              />
-              <CardContent>
-                {/* Exibe a descrição do prêmio */}
-                <Typography
-                  variant="h6"
-                  color="text.secondary"
-                  sx={{ textAlign: "center" }} // Centraliza o texto
-                >
-                  {award.name}
-                </Typography>
 
-                {/* Botão para mais detalhes */}
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  sx={{ mt: 2 }}
-                  onClick={() => handleDetailsClick(award)}
-                >
-                  View Details
-                </Button>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
+      {/* Campo de pesquisa */}
+      <TextField
+        fullWidth
+        label="Search by award name"
+        variant="outlined"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        sx={{ mb: 4 }}
+      />
+
+      <Grid container spacing={3}>
+        {awards
+          .filter((award) =>
+            award.name.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+          .map((award) => (
+            <Grid item key={award.id} xs={9} sm={6} md={4}>
+              <Card>
+                <CardMedia
+                  component="img"
+                  height="140"
+                  image={award.link_image}
+                  alt={award.name}
+                />
+                <CardContent>
+                  <Typography
+                    variant="h6"
+                    color="text.secondary"
+                    sx={{ textAlign: "center" }}
+                  >
+                    {award.name}
+                  </Typography>
+                  {/* Exibe o total de pernas */}
+                  {/* Exibe o total de pernas */}
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ textAlign: "center", mt: 1 }}
+                  >
+                    <Chip label={`Total Legs: ${award.total_legs}`} />
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    sx={{ mt: 2 }}
+                    onClick={() => handleDetailsClick(award)}
+                  >
+                    View Details
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
       </Grid>
     </Container>
   );

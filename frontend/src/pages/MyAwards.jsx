@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Importe o useNavigate
 import AxiosInstance from '../components/AxiosInstance';
 import {
   Table,
@@ -10,6 +11,7 @@ import {
   CircularProgress,
   Typography,
   Avatar,
+  Button,
 } from '@mui/material';
 
 const MyAwards = () => {
@@ -17,6 +19,7 @@ const MyAwards = () => {
   const [userAwards, setUserAwards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate(); // Hook para navegação
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,6 +55,11 @@ const MyAwards = () => {
   // Filtrar apenas os prêmios com progresso maior que 0
   const filteredData = combinedData.filter((award) => award.progress > 0);
 
+  // Função para navegar para a página de detalhes de um prêmio
+  const handleDetailsClick = (award) => {
+    navigate(`/app/awards/awardDetail/${award.id}`, { state: { award } }); // Passa os dados do prêmio
+  };
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
@@ -63,7 +71,7 @@ const MyAwards = () => {
   if (error) {
     return (
       <Typography variant="h6" color="error" align="center" style={{ marginTop: '20px' }}>
-        Erro: {error}
+        Error: {error}
       </Typography>
     );
   }
@@ -80,6 +88,7 @@ const MyAwards = () => {
             <TableCell><strong>Start</strong></TableCell>
             <TableCell><strong>End</strong></TableCell>
             <TableCell><strong>Status</strong></TableCell>
+            <TableCell><strong>Details</strong></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -123,6 +132,15 @@ const MyAwards = () => {
                   </div>
                   <span>{award.progress}%</span>
                 </div>
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleDetailsClick(award)}
+                >
+                  View Details
+                </Button>
               </TableCell>
             </TableRow>
           ))}
