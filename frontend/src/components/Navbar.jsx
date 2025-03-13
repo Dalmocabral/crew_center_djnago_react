@@ -48,7 +48,7 @@ const menuItems = [
   { text: 'World Tour', icon: <AwardsIcon />, path: '/app/awards' },
   { text: 'My Flights', icon: <FlightsIcon />, path: '/app/my-flights' },
   { text: 'My World Tour', icon: <PublicIcon />, path: '/app/my-awards' },
-  { text: 'MAP', icon: <MapIcon />, path: '/app/map' },
+  { text: 'Map', icon: <MapIcon />, path: '/app/map' },
 ];
 
 const DrawerContent = ({ darkMode, handleThemeChange, navigate, location, handleLogout }) => (

@@ -21,6 +21,7 @@
     "date-fns": "^2.29.3",
     "dayjs": "^1.11.13",
     "leaflet": "^1.9.4",
+    "leaflet-rotatedmarker": "^0.2.0",
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
     "react": "^19.0.0",
