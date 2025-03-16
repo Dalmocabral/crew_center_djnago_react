@@ -12,6 +12,8 @@ from rest_framework.viewsets import ViewSet
 from datetime import timedelta
 from django.http import HttpResponse
 from .utils import send_welcome_email
+from rest_framework.decorators import api_view
+from django.db.models import Sum, Count
 
 User = get_user_model()
 
@@ -325,6 +327,23 @@ class ProfileUpdateView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class FlightStatsView(APIView):
+    """
+    Retorna estatísticas gerais de voos, como total de voos e total de horas voadas.
+    """
+    def get(self, request):
+        total_flights = PirepsFlight.objects.count()
+
+        # Obtém o total de tempo de voo (timedelta)
+        total_duration = PirepsFlight.objects.aggregate(total_duration=Sum("flight_duration"))["total_duration"]
+
+        # Converte timedelta para horas decimais (exemplo: 2h 30min = 2.5)
+        total_hours = total_duration.total_seconds() / 3600 if total_duration else 0
+
+        return Response({
+            "total_flights": total_flights,
+            "total_hours": round(total_hours, 2)  # Agora round() funciona corretamente
+        })
 
 def test_email(request):
     send_welcome_email("destinatario@email.com")

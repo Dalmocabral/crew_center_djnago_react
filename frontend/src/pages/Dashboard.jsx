@@ -370,7 +370,7 @@ const Dashboard = () => {
       <Grid container spacing={2} sx={{ mt: 3 }}>
         <Grid item xs={12} md={6}>
           <Card sx={{ p: 2, minHeight: 400 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>  
             Flights per Day (Last 30 Days)
             </Typography>
             <Bar data={barChartData} options={barChartOptions} width={400} height={300} />
