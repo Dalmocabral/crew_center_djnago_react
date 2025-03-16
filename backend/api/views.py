@@ -345,6 +345,14 @@ class FlightStatsView(APIView):
             "total_hours": round(total_hours, 2)  # Agora round() funciona corretamente
         })
 
+class ValidateTokenView(APIView):
+    permission_classes = [IsAuthenticated]  # Apenas usuários autenticados podem acessar
+
+    def get(self, request):
+        # Se o token for válido, o usuário já está autenticado
+        return Response({"message": "Token válido"}, status=status.HTTP_200_OK)
+
+
 def test_email(request):
     send_welcome_email("destinatario@email.com")
     return HttpResponse("E-mail enviado com sucesso!")

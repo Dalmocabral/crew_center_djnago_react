@@ -1,5 +1,3 @@
-// src/auth.js
-
 // Verifica se o token está presente e é válido
 export const isAuthenticated = async () => {
   const token = localStorage.getItem('token');
@@ -11,7 +9,7 @@ export const isAuthenticated = async () => {
   try {
     // Faz uma requisição ao backend para validar o token
     const response = await fetch('/api/validate-token/', {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,

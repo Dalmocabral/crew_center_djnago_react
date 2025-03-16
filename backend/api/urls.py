@@ -25,6 +25,7 @@ urlpatterns = [
     path('users/me/', CurrentUserView.as_view(), name='current-user'),
     path('profile/update/', ProfileUpdateView.as_view(), name='profile-update'),
     path("flight-stats/", FlightStatsView.as_view(), name="flight-stats"),
+    path('api/validate-token/', ValidateTokenView.as_view(), name='validate-token'),
 ]
 
 # Inclua as rotas do router
