@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-rotatedmarker"; // Certifique-se de instalar esta biblioteca
 import ApiService from "../components/ApiService"; // Ajuste o caminho conforme necessário
 import airplaneUserIcon from "../assets/image/airplane_user.png"; // Caminho da imagem do avião
+import axios from "axios"; // Importe o axios
 
 const sessions = {
   training: { id: "9ed5512e-b6eb-401f-bab8-42bdbdcf2bab", name: "Training Server" },
@@ -12,12 +13,18 @@ const sessions = {
 };
 
 const MapWithFlights = ({ darkMode }) => {
-  const [selectedSession, setSelectedSession] = useState(sessions.training.id);
+  const [selectedSession, setSelectedSession] = useState(
+    localStorage.getItem("lastSession") || sessions.training.id
+  );
+
   const [flights, setFlights] = useState([]);
+  const [selectedFlight, setSelectedFlight] = useState(null); // Armazena o voo selecionado
   const mapContainer = useRef(null);
   const map = useRef(null);
   const markersLayer = useRef(null);
-  const tileLayer = useRef(null); // Referência para a camada de tiles
+  const tileLayer = useRef(null);
+  const polylineLayer = useRef(null); // Camada para a trajetória atual
+  const routeLayer = useRef(null); // Camada para a rota planejada
 
   // Inicializa o mapa
   useEffect(() => {
@@ -35,6 +42,8 @@ const MapWithFlights = ({ darkMode }) => {
       ).addTo(map.current);
 
       markersLayer.current = L.layerGroup().addTo(map.current);
+      polylineLayer.current = L.layerGroup().addTo(map.current); // Inicializa a camada da trajetória atual
+      routeLayer.current = L.layerGroup().addTo(map.current); // Inicializa a camada da rota planejada
     }
 
     return () => {
@@ -74,8 +83,46 @@ const MapWithFlights = ({ darkMode }) => {
 
       const marker = createRotatedMarker(flight);
       marker.addTo(markersLayer.current);
+
+      // Adiciona evento de clique para exibir a rota
+      marker.on("click", async () => {
+        setSelectedFlight(flight); // Define o voo selecionado
+
+        // Busca a rota planejada
+        const route = await ApiService.getRoute(selectedSession, flight.flightId);
+        if (route) {
+          const coordinates = route.map((point) => [point.latitude, point.longitude]);
+
+          // Desenha a rota planejada (linha pontilhada preta)
+          if (routeLayer.current) {
+            routeLayer.current.clearLayers();
+            const dashedPolyline = L.polyline(coordinates, {
+              color: "#000000", // Cor preta
+              weight: 2,
+              dashArray: "5, 10", // Linha pontilhada
+            }).addTo(routeLayer.current);
+          }
+        }
+
+        // Busca o plano de voo para obter aeroportos de origem e destino
+        const flightPlan = await fetchFlightPlan(flight.flightId);
+        if (flightPlan) {
+          const polyline = L.polyline(
+            [
+              [flightPlan.origin.lat, flightPlan.origin.lon], // Aeroporto de origem
+              [flight.latitude, flight.longitude], // Posição atual da aeronave
+              [flightPlan.destination.lat, flightPlan.destination.lon], // Aeroporto de destino
+            ],
+            { color: "#0000FF", weight: 2 } // Linha contínua azul
+          );
+          if (polylineLayer.current) {
+            polylineLayer.current.clearLayers();
+            polyline.addTo(polylineLayer.current);
+          }
+        }
+      });
     });
-  }, [flights]);
+  }, [flights, selectedSession]);
 
   // Função para criar um marcador rotacionado
   const createRotatedMarker = (flight) => {
@@ -97,6 +144,41 @@ const MapWithFlights = ({ darkMode }) => {
     `);
 
     return marker;
+  };
+
+  // Função para buscar o plano de voo
+  const fetchFlightPlan = async (flightId) => {
+    try {
+      const response = await axios.get(
+        `https://api.infiniteflight.com/public/v2/sessions/${selectedSession}/flights/${flightId}/flightplan?apikey=nvo8c790hfa9q3duho2jhgd2jf8tgwqw`
+      );
+      const flightPlanData = response.data.result.flightPlanItems;
+
+      // Filtra itens com coordenadas válidas
+      const validItems = flightPlanData.filter(
+        (item) => item.location.latitude !== 0 && item.location.longitude !== 0
+      );
+
+      // O primeiro item válido é o aeroporto de origem
+      const origin = validItems[0];
+
+      // O último item válido é o aeroporto de destino
+      const destination = validItems[validItems.length - 1];
+
+      return {
+        origin: {
+          lat: origin.location.latitude,
+          lon: origin.location.longitude,
+        },
+        destination: {
+          lat: destination.location.latitude,
+          lon: destination.location.longitude,
+        },
+      };
+    } catch (error) {
+      console.error("Error fetching flight plan data:", error);
+      return null;
+    }
   };
 
   // Atualiza o tema do mapa quando o dark mode muda
@@ -122,20 +204,24 @@ const MapWithFlights = ({ darkMode }) => {
       {/* Dropdown para selecionar a sessão */}
       <select
         value={selectedSession}
-        onChange={(e) => setSelectedSession(e.target.value)}
+        onChange={(e) => {
+          const sessionId = e.target.value;
+          setSelectedSession(sessionId); // Atualiza o estado
+          localStorage.setItem("lastSession", sessionId); // Salva no localStorage
+        }}
         style={{
           position: "absolute",
-          top: "13%", // Centraliza verticalmente
-          left: "18%", // Centraliza horizontalmente
-          transform: "translate(-50%, -50%)", // Ajusta para ficar no centro exato
-          zIndex: 1050, // Garante que fique acima do mapa
-          backgroundColor: darkMode ? "#333" : "white", // Cor de fundo baseada no tema
-          color: darkMode ? "white" : "black", // Cor do texto baseada no tema
+          top: "13%",
+          left: "18%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 1050,
+          backgroundColor: darkMode ? "#333" : "white",
+          color: darkMode ? "white" : "black",
           padding: "10px",
           fontSize: "16px",
           border: "1px solid #ccc",
           borderRadius: "4px",
-          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", // Adiciona uma sombra para melhor visibilidade
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
         }}
       >
         {Object.entries(sessions).map(([key, session]) => (

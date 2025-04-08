@@ -21,6 +21,7 @@ import {
   Card,
   CardContent,
 } from '@mui/material';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
 import AxiosInstance from '../components/AxiosInstance';
 import FlightMap from '../components/FlightMap';
 import DistanceCalculator from '../components/DistanceCalculator';
@@ -137,7 +138,7 @@ const AwardDetail = () => {
               Here you will see an overview of the tour legs.
             </Typography>
 
-            
+
 
             <TableContainer component={Paper}>
               <Table>
@@ -154,14 +155,45 @@ const AwardDetail = () => {
                   {flightLegs.map((leg, index) => (
                     <TableRow key={leg.id}>
                       <TableCell>{index + 1}</TableCell>
-                      <TableCell>{leg.from_airport}</TableCell>
-                      <TableCell>{leg.to_airport}</TableCell>
                       <TableCell>
-                        <DistanceCalculator
-                          fromAirport={leg.from_airport}
-                          toAirport={leg.to_airport}
-                          airportsData={airportsData}
-                        />
+                        {leg.from_airport}
+                        <br />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {airportsData[leg.from_airport]?.country && (
+                            <img
+                              src={`https://flagcdn.com/w320/${airportsData[leg.from_airport].country.toLowerCase()}.png`}
+                              alt={airportsData[leg.from_airport].country}
+                              style={{ width: '24px', height: 'auto', border: '1px solid #ddd' }}
+                            />
+                          )}
+                          {airportsData[leg.from_airport]?.name || 'N/A'}
+
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {leg.to_airport}
+                        <br />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {airportsData[leg.to_airport]?.country && (
+                            <img
+                              src={`https://flagcdn.com/w320/${airportsData[leg.to_airport].country.toLowerCase()}.png`}
+                              alt={airportsData[leg.to_airport].country}
+                              style={{ width: '24px', height: 'auto', border: '1px solid #ddd' }}
+                            />
+                          )}
+                          {airportsData[leg.to_airport]?.name || 'N/A'}
+
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <DistanceCalculator
+                            fromAirport={leg.from_airport}
+                            toAirport={leg.to_airport}
+                            airportsData={airportsData}
+                          />
+                          <span style={{ marginLeft: '8px' }}><SwapVertIcon /></span>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Button
