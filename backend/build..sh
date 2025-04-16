@@ -1,7 +1,7 @@
+#!/usr/bin/env bash
 set -o errexit
 
 pip install -r requirements.txt
 
-python  manager.py collectstatic --no-input
-
-python  manager.py migrate
+python manage.py collectstatic --no-input
+python manage.py migrate
