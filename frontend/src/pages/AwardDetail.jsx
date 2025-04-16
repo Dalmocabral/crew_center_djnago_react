@@ -22,6 +22,8 @@ import {
   CardContent,
 } from '@mui/material';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import StraightenIcon from '@mui/icons-material/Straighten';
 import AxiosInstance from '../components/AxiosInstance';
 import FlightMap from '../components/FlightMap';
 import DistanceCalculator from '../components/DistanceCalculator';
@@ -148,6 +150,7 @@ const AwardDetail = () => {
                     <TableCell>Departure</TableCell>
                     <TableCell>Destination</TableCell>
                     <TableCell>Distance</TableCell>
+                    <TableCell>Estimated Time</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -186,15 +189,26 @@ const AwardDetail = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <DistanceCalculator
-                            fromAirport={leg.from_airport}
-                            toAirport={leg.to_airport}
-                            airportsData={airportsData}
-                          />
-                          <span style={{ marginLeft: '8px' }}><SwapVertIcon /></span>
-                        </div>
-                      </TableCell>
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <StraightenIcon />
+    <DistanceCalculator
+      fromAirport={leg.from_airport}
+      toAirport={leg.to_airport}
+      airportsData={airportsData}
+    />
+  </div>
+</TableCell>
+<TableCell>
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <AccessTimeIcon />
+    <DistanceCalculator
+      fromAirport={leg.from_airport}
+      toAirport={leg.to_airport}
+      airportsData={airportsData}
+      showTime={true}
+    />
+  </div>
+</TableCell>
                       <TableCell>
                         <Button
                           variant="contained"
