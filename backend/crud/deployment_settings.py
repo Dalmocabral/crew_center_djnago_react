@@ -26,7 +26,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'https://render-deploy-world-tour.onrender.com/'
+    'https://render-deploy-world-tour.onrender.com'
 ]
 
 STORAGES = {
