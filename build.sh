@@ -7,6 +7,7 @@ pip install -r requirements.txt
 python manage.py collectstatic --no-input
 python manage.py migrate
 
+'''
 if [[ $CREATE_SUPERUSER ]]; then
     python manage.py shell << END
 from django.contrib.auth import get_user_model
@@ -18,3 +19,4 @@ if not User.objects.filter(email='admin@example.com').exists():
     )
 END
 fi
+'''
